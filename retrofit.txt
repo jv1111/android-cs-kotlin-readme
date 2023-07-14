@@ -1,0 +1,32 @@
+//retrofitApi
+import...
+
+interface MyApi{
+
+	@GET("/comments")
+	fun getComments(): Response<List<Comment>>
+}
+
+//data
+data class Comment{
+	val body: String,
+	val email: String
+	//...Other data
+}
+
+//MainActivity -> onCreate 
+val api = Retrofit.Builder() //retrofit
+		.baseUrl(BASE_URL)
+		.addConverterFactory(GsonConverterFactory.create())
+		.build()
+		.create(MyApi::class.java)
+
+GlobalScolpe.launch(Dispatcher.IO){ //Coroutine, Dispatcher.IO = Internet
+	val response = api.getComments()
+	if(response.isSuccessful){
+		for(comment in response.body()){
+			Lod.d(TAG, comment.toString());
+		}
+	}
+}
+

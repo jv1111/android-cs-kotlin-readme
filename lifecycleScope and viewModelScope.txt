@@ -1,0 +1,19 @@
+//GlobalScope run globaly
+//lifecycleScope run only on cycle
+
+//MainActivity -> onCreate
+btnStartActivity.setOnClickListener{
+	lifecycleScope.launch{
+		while(true){
+			delay(1000L)//delay = 1sec
+			Log.d(TAG, "Still running")
+		}
+	}
+	GlobalScope.launch{
+		delay(5000L)
+		Intent(this@MainActivity, SecondActivity::class.java).also{
+			startActivity(it)
+			finish()
+		}
+	}
+}
