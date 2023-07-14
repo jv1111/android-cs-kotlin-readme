@@ -1,0 +1,44 @@
+//dependencies
+// ViewModel
+implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version"
+// LiveData
+implementation "androidx.lifecycle:lifecycle-livedata-ktx:$lifecycle_version" 
+
+//TestViewModel
+class TestViewModel{
+	var number = 0
+	
+	val currentNumber: MutableLiveData<Int> by lazy{
+		MutableLiveData<Int>()
+	}
+	
+	val currentNumber: MutableLiveData<Int> by lazy{
+		MutableLiveData<Int>()
+	}
+	
+}
+
+//MainActivity
+lateinit var viewmodel: TestViewModel
+
+//MainActivity -> onCreate
+viewModel = ViewModelProvider(this).get(TestViewModel::class.java)
+
+//MainActivity
+private fun incrementText(){
+	btn.setOnclickListener{
+		viewModel.currentNumber.value = ++viewModel.number//increment value in the viewModel
+		viewModel.currentBoolean.value = viewModel.number % 2 == 0
+	}
+}
+
+//MainActivity -> onCreate
+viewModel.currentNumber.observe{this, Observer{
+	textView.text = it.toString()
+	}
+}
+
+viewModel.currentBoolean.observe{this, Observer{
+	tvBool.text = it.toString()
+	}
+}
