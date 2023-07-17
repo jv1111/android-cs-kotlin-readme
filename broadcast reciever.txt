@@ -1,0 +1,27 @@
+//Broadcast receiver listens to changes, in this examlpe we use ACTION_AIRPLANE_MODE_CHANGED
+
+//AirplaneModelChangedReceiver
+class AirplaneModelChangedReceiver: BroadcastReciever(){
+	override fun onReceive(context: Context?, intent: Intent?){
+		val isAirplaneModeEnabled = intent?.getBooleanExtra() ?: return//this will return emediatly and stop the program if null
+		if(isAirplaneModeEnabled){
+			//TODO e.g Toast message	
+		}else{
+			//TODO e.g Toast message
+		}
+	}
+}
+
+//MainActivity
+lateinit var receiver: AirplaneModelChangedReceiver
+
+//MainActivity -> onCreate
+receiver = AirplaneModelChangedReceiver()
+
+IntentFilter(Intent.ACTION_AIRPLANE_MODE_CHANGED).also{
+	registerReceiver(receiver, it)
+}
+
+//MainActivity -> onStop
+unregisterReceiver(receiver)
+

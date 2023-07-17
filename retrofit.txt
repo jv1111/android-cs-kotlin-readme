@@ -1,3 +1,17 @@
+//dependencies
+    def retrofit_version = "2.9.0"
+    implementation "com.squareup.retrofit2:retrofit:$retrofit_version"
+    implementation "com.squareup.retrofit2:converter-gson:$retrofit_version"//to convert json data if you are using xml use simple xml dependency
+
+    def coroutines_version = "1.6.0"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutines_version"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutines_version"
+
+    implementation "androidx.lifecycle:lifecycle-livedata-ktx:2.6.1"
+
+//add internet permission in the manifest.xml
+    <uses-permission android:name="android.permission.INTERNET"/>
+
 //retrofitApi
 import...
 
@@ -25,7 +39,7 @@ GlobalScolpe.launch(Dispatcher.IO){ //Coroutine, Dispatcher.IO = Internet
 	val response = api.getComments()
 	if(response.isSuccessful){
 		for(comment in response.body()){
-			Lod.d(TAG, comment.toString());
+			Log.d(TAG, comment.toString());
 		}
 	}
 }

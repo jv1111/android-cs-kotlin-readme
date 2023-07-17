@@ -5,7 +5,7 @@ implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version"
 implementation "androidx.lifecycle:lifecycle-livedata-ktx:$lifecycle_version" 
 
 //TestViewModel
-class TestViewModel{
+class TestViewModel:ViewModel(){
 	var number = 0
 	
 	val currentNumber: MutableLiveData<Int> by lazy{

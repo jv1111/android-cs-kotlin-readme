@@ -1,0 +1,90 @@
+//add the dependecies into the build.gradle(app)
+    def retrofit_version = "2.9.0"
+    implementation "com.squareup.retrofit2:retrofit:$retrofit_version"
+    implementation "com.squareup.retrofit2:converter-gson:$retrofit_version"//to convert json data if you are using xml use simple xml dependency
+
+    def coroutines_version = "1.6.0"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutines_version"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutines_version"
+
+    implementation "androidx.lifecycle:lifecycle-livedata-ktx:2.6.1"
+
+//Create UserInfo model
+package com.example.retrofit_post_get
+
+import com.google.gson.annotations.SerializedName
+
+data class UserInfo(
+    val body: String?,
+    val id: Int?,
+    val title: String?,
+    val userId: Int?
+)
+//----------------------------------------------------
+
+//Create a ResponseData
+package com.example.retrofit_post_get
+
+import com.google.gson.annotations.SerializedName
+data class ResponseData (
+        @SerializedName("message")
+        val message: String?
+)
+//---------------------------------------------------- 
+
+//Create Service
+package com.example.retrofit_post_get
+
+import retrofit2.Response
+import retrofit2.http.Body
+import retrofit2.http.Headers
+import retrofit2.http.POST
+//Use the UserInfo as a data to send and the ResponseData as the data to retrieve
+interface Service {
+    @Headers("Content-Type: application/json")
+    @POST("/")
+    suspend fun postRequest(@Body data: UserInfo): Response<ResponseData>
+}
+//----------------------------------------------------
+
+//Create retrofit interface
+package com.example.retrofit_post_get
+
+import com.google.gson.GsonBuilder
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
+
+class RetrofitInstance {
+    companion object{
+        val baseUrl = "https://postandgettest.onrender.com/"
+        fun getRetrofitInstance(): Retrofit {
+            return Retrofit.Builder()
+                .baseUrl(baseUrl)
+                .addConverterFactory(GsonConverterFactory.create(GsonBuilder().create()))
+                .build()
+        }
+    }
+}
+//----------------------------------------------------
+
+//in the main activity -> onCreate
+val api = RetrofitInstance
+            .getRetrofitInstance()
+            .create(Service::class.java)
+
+//then make a request
+lifecycleScope.launch(Dispatchers.IO) {
+            val data = UserInfo(
+                body = "ow",
+                id = null,
+                title = "hey",
+                userId = 123
+            )
+            val response = api.postRequest(data)
+            if(response.isSuccessful){
+                Log.i("myTag","success")
+                Log.i("myTag", response.body().toString())
+            }else{
+                Log.i("myTag","fail")
+            }
+        }
