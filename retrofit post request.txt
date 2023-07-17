@@ -8,6 +8,7 @@
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutines_version"
 
     implementation "androidx.lifecycle:lifecycle-livedata-ktx:2.6.1"
+	implementation "com.squareup.okhttp3:logging-interceptor:4.11.0"
 
 //Create UserInfo model
 package com.example.retrofit_post_get
@@ -53,15 +54,29 @@ package com.example.retrofit_post_get
 import com.google.gson.GsonBuilder
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
+import java.util.concurrent.TimeUnit
 
 class RetrofitInstance {
     companion object{
         val baseUrl = "https://postandgettest.onrender.com/"
         fun getRetrofitInstance(): Retrofit {
+			val interceptor = HttpLoggingInterceptor().apply {
+                this.level = HttpLoggingInterceptor.Level.BODY//<NONE,BODY,HEADER>
+            }
+            val client = OkHttpClient.Builder().apply {
+                this.addInterceptor(interceptor)
+                    .connectTimeout(30, TimeUnit.SECONDS)//set the timeout to 30 seconds for slow internet connection
+                    .readTimeout(20, TimeUnit.SECONDS)
+                    .writeTimeout(25, TimeUnit.SECONDS)
+            }.build()
+		
             return Retrofit.Builder()
                 .baseUrl(baseUrl)
                 .addConverterFactory(GsonConverterFactory.create(GsonBuilder().create()))
-                .build()
+                .client(client)
+				.build()
         }
     }
 }
@@ -73,18 +88,22 @@ val api = RetrofitInstance
             .create(Service::class.java)
 
 //then make a request
-lifecycleScope.launch(Dispatchers.IO) {
+		lifecycleScope.launch(Dispatchers.IO) {
             val data = UserInfo(
                 body = "ow",
                 id = null,
                 title = "hey",
                 userId = 123
             )
-            val response = api.postRequest(data)
-            if(response.isSuccessful){
-                Log.i("myTag","success")
-                Log.i("myTag", response.body().toString())
-            }else{
-                Log.i("myTag","fail")
+            try{
+                val response = api.postRequest(data)
+                if(response.isSuccessful){
+                    Log.i("myTag","success")
+                    Log.i("myTag", response.body().toString())
+                }else{
+                    Log.i("myTag","fail")
+                }
+            }catch (e: Exception){
+                Log.i("myTag", e.message.toString())
             }
         }
