@@ -1,0 +1,23 @@
+// Define the enum class Actions
+enum class Actions {
+    START, STOP
+}
+
+fun performAction(action: Actions) {
+    when (action) {
+        Actions.START -> {
+            println("Action started!")
+            // Code block for handling START action
+        }
+        Actions.STOP -> {
+            println("Action stopped!")
+            // Code block for handling STOP action
+        }
+    }
+}
+
+fun main() {
+    // Calling the performAction function with different actions
+    performAction(Actions.START)
+    performAction(Actions.STOP)
+}

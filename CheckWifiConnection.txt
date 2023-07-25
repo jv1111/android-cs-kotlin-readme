@@ -1,0 +1,55 @@
+//add permission
+<uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+
+//create broadcastreceiver
+ import android.content.BroadcastReceiver
+
++import android.content.Context
+
++import android.content.Intent
+
++import android.net.wifi.WifiManager
+
++import android.util.Log
+
++
+
++class WifiConnectivityBroadCastReceiver: BroadcastReceiver() {
+
++    override fun onReceive(context: Context?, intent: Intent?) {
+
++        Log.i("myTag", "wifi broadcast called")
+
++        checkWifiStatus(context)
+
++    }
+
++
+
++    private fun checkWifiStatus(context: Context?){
+
++        val wifiManager = context?.getSystemService(Context.WIFI_SERVICE) as WifiManager
+
++        if(wifiManager.isWifiEnabled){
+
++            Log.i("myTag", "wifi is enabled")
+
++        }else{
+
++            Log.i("myTag", "wifi is disabled")
+
++        }
+
++    }
+
++}
+
+//In MainActivity
++    private lateinit var wifiConnectivityBroadCastReceiver: WifiConnectivityBroadCastReceiver
+
+//In MainActivity.kt -> onCreate register the broadcastreceiver
++        wifiConnectivityBroadCastReceiver = WifiConnectivityBroadCastReceiver()
++        //register receiver
++        IntentFilter(WifiManager.WIFI_STATE_CHANGED_ACTION).also {
++            registerReceiver(wifiConnectivityBroadCastReceiver, it)
++        }

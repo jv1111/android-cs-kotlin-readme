@@ -1,0 +1,18 @@
+//in your function class e.g Broadcast reciever
+class WifiConnectivityBroadCastReceiver(
+    val viewModel: YourViewModel
+): BroadcastReceiver() {
+	override fun onReceive(context: Context?, intent: Intent?) {
+        viewModel.myVal.value = true;
+        Log.i("myTag", "broadcast called")
+        checkWifiStatus(context)
+    }
+}
+
+
+//in your fragment or activity -> onCreate
+ wifiConnectivityBroadCastReceiver = WifiConnectivityBroadCastReceiver(viewModel)//pass the data here it could be any variable
+    //register receiver
+    IntentFilter(WifiManager.WIFI_STATE_CHANGED_ACTION).also {
+        context?.registerReceiver(wifiConnectivityBroadCastReceiver, it)
+    }

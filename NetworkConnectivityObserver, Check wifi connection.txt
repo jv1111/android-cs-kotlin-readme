@@ -1,0 +1,114 @@
+1) Create a ConnectivityObserver.kt
+    package com.example.kotlin_network_connectivity_observer_check_wifi_connection
+
+    import kotlinx.coroutines.flow.Flow
+
+    interface ConnectivtyObserver {
+        //function that will return a Flow of type Status
+        fun observe(): Flow<Status>
+
+        //create an enum for Status
+        enum class Status {
+            Available, Unavailable, Losing, Lost
+        }
+    }
+
+2) create NetworkConnectivityObserver.kt and implement the ConnectivityObserver
+package com.example.kotlin_network_connectivity_observer_check_wifi_connection
+
+import android.content.Context
+import android.net.ConnectivityManager
+import android.net.Network
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.launch
+
+class NetworkConnectivityObserver(
+    private val context: Context
+): ConnectivtyObserver {
+    //get the connectivity manager
+    private val connectivityManager =
+        context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+
+    //override the callback
+    override fun observe(): Flow<ConnectivtyObserver.Status> {
+        return callbackFlow {
+            //create a callback object
+            val callback = object : ConnectivityManager.NetworkCallback(){
+                override fun onAvailable(network: Network) {
+                    super.onAvailable(network)
+                    launch { send(ConnectivtyObserver.Status.Available) }
+                }
+
+                override fun onLosing(network: Network, maxMsToLive: Int) {
+                    super.onLosing(network, maxMsToLive)
+                    launch { send(ConnectivtyObserver.Status.Losing) }
+                }
+
+                override fun onLost(network: Network) {
+                    super.onLost(network)
+                    launch { send(ConnectivtyObserver.Status.Lost) }
+                }
+
+                override fun onUnavailable() {
+                    super.onUnavailable()
+                    launch { send(ConnectivtyObserver.Status.Unavailable) }
+                }
+            }
+            //register the created callback
+            connectivityManager.registerDefaultNetworkCallback(callback)
+            awaitClose{//will be called as soon as the user navigates away
+                //cleanup
+                connectivityManager.unregisterNetworkCallback(callback)
+            }
+        }.distinctUntilChanged()//prevent two emission of the same type, wont trigger same status twice
+    }
+}
+
+3.) add dependency
+   def lifecycle_version = "2.6.1"
+   implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version"
+
+
+4.) register it in the main activity
+package com.example.kotlin_network_connectivity_observer_check_wifi_connection
+
+import androidx.appcompat.app.AppCompatActivity
+import android.os.Bundle
+import android.util.Log
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.launch
+
+class MainActivity : AppCompatActivity() {
+
+    //you can do this in view model
+    private lateinit var connectivtyObserver: ConnectivtyObserver
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        connectivtyObserver = NetworkConnectivityObserver(applicationContext)
+        setContentView(R.layout.activity_main)
+        GlobalScope.launch {
+            while (true){
+                connectivtyObserver
+                    .observe()
+                    .distinctUntilChanged()
+                    .collect(){
+                            status ->
+                        Log.i("myTag", "network: $status")
+                    }
+                delay(1000L)
+            }
+        }
+
+    }
+    private fun getNetworkStatus(){
+
+    }
+}
