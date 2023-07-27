@@ -6,8 +6,7 @@
 
 //TestViewModel
 class TestViewModel:ViewModel(){
-	var number = 0
-	
+	val number = 0//only used for the function, not neccessary
 	val currentNumber: MutableLiveData<Int> by lazy{
 		MutableLiveData<Int>()
 	}
@@ -42,3 +41,8 @@ viewModel.currentBoolean.observe{this, Observer{
 	tvBool.text = it.toString()
 	}
 }
+
+//change liveData value
+val x = MutableLiveData<Int>()
+x.postValue(newValue);//works on background
+x.value = newValue;//works on main thread
