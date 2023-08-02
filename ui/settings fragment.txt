@@ -1,0 +1,85 @@
+1. create a new fragment with predefined settings fragment
+2. create your vector icons
+3. in your settings fragment xml add your desired icons
+	<PreferenceCategory app:title="@string/messages_header"
+        android:icon="@drawable/ic_launcher_foreground"> 
+	or
+	<EditTextPreference
+            app:key="signature"<-- this key will be used to get the value of this element
+            app:title="@string/signature_title"
+            app:useSimpleSummaryProvider="true"
+            android:icon="@drawable/ic_launcher_foreground"/>
+full code of the settings fragment, note that the settings fragment are automatically created and it is in the xml folder named root_parent.xml<- settings fragment .xml file
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory app:title="Message"
+        android:icon="@drawable/ic_launcher_foreground">
+
+        <EditTextPreference
+            app:key="signature" <-- used to get the value on code
+            app:title="@string/signature_title"
+            app:useSimpleSummaryProvider="true"<- just a message indicator, like a hint
+            android:icon="@drawable/ic_launcher_foreground"/>
+
+<!--   entries are the titles of the selection items and entryValues are the values -->
+<!-- those array are stored in res/array folder and you can change its values accordingly -->
+        <ListPreference
+            app:defaultValue="reply"
+            app:entries="@array/reply_entries"<- these are the names of the selection items and can be found in the res/array folder, you can change it accordingly
+            app:entryValues="@array/reply_values"<- these are the values
+            app:key="reply"
+            app:title="@string/reply_title"
+            app:useSimpleSummaryProvider="true" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory <- these are the divider
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:title="@string/sync_header">
+
+        <SwitchPreferenceCompat
+            app:key="sync"
+            app:title="@string/sync_title" />
+
+
+        <SwitchPreferenceCompat
+            app:dependency="sync" <- app:dependency="sync" is used to make a switch depends on the sync switch e.g becomes a child of "sync"
+            app:key="attachment"
+            app:summaryOff="@string/attachment_summary_off"
+            app:summaryOn="@string/attachment_summary_on"
+            app:title="@string/attachment_title" />
+        <PreferenceCategory
+            android:title="Notifications">
+            <SeekBarPreference
+                android:key="volume_notification"
+                app:title="Volume"
+                app:showSeekBarValue="true"
+                android:defaultValue="50"/>
+            <SwitchPreferenceCompat
+                android:key="notifications"
+                app:title="Disable notifications"
+                android:summaryOn="You will no longer receive notifications"
+                android:summaryOff="You will receive all notifications"
+                />
+        </PreferenceCategory>
+
+    </PreferenceCategory>
+
+</PreferenceScreen>
+
+4. To change the color go to the theme.xml
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Base.Theme.SettingsFragment" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Customize your light theme here. -->
+         <item name="colorPrimary">@color/primaryColor</item>
+        <item name="android:windowBackground">@color/background_color</item>
+        <item name="android:textColor">@color/foreground_color</item>
+        <item name="android:textColorSecondary">@color/hint_color</item>
+        <item name="colorAccent">@color/titles_color</item>
+    </style>
+
+    <style name="Theme.SettingsFragment" parent="Base.Theme.SettingsFragment" />
+</resources>

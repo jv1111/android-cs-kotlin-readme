@@ -1,0 +1,9 @@
+navigation inside a fragment
+override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+
+  // Define container.
+  val loginDialogContainer = childFragmentManager.findFragmentById(R.id.container) as NavHostFragment
+
+  // Set nav controller.
+  val loginNavController: NavController = loginDialogContainer.navController
+}

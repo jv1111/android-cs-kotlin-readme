@@ -1,0 +1,23 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Base.Theme.SettingsFragment" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Customize your light theme here. -->
+         <item name="colorPrimary">@color/primaryColor</item>//change primaryColor
+        <item name="android:windowBackground">@color/background_color</item>
+        <item name="android:textColor">@color/foreground_color</item>
+        <item name="android:textColorSecondary">@color/hint_color</item>
+        <item name="colorAccent">@color/titles_color</item>
+    </style>
+
+    <style name="Theme.SettingsFragment" parent="Base.Theme.SettingsFragment" />
+</resources>
+
+//creating new styles/theme
+<!-- parent is the a set of style that you can override using <item>your style/color<item/> -->
+    <style name="nightModeSwitch" parent="Theme.AppCompat.Light">
+        <item name="colorControlActivated">@color/night_mode</item>
+        <item name="colorSwitchThumbNormal">@color/white</item>
+        <item name="android:colorForeground">#989898</item>
+    </style>
+	
+//theme application

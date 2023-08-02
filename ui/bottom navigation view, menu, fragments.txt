@@ -1,0 +1,152 @@
+//part 1
+1) Create bottom navigation view
+    //in main.xml code...
+    //create menu resource
+    //add the menu to the activity_main.xml code...
+
+//activty_main.xml (create a FrameLayout and BottomNavigationView)
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/container"
+        android:layout_above="@+id/bottomNav"
+        />
+
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottomNav"
+        style="@style/Widget.MaterialComponents.BottomNavigationView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:background="@color/settingsColor"
+        app:menu="@menu/bottom_nav_menu" />
+
+</RelativeLayout>
+
+2) create menu resource file
+//bottom_nav_menu.xml
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/drive"
+        android:title="Drive"
+        android:icon="@drawable/baseline_drive_eta_24"
+        />
+    <item
+        android:id="@+id/blink"
+        android:title="Blink"
+        android:icon="@drawable/baseline_flashlight_on_24"
+        />
+    <item
+        android:id="@+id/custom"
+        android:title="Custom"
+        android:icon="@drawable/baseline_window_24"
+        />
+    <item
+        android:id="@+id/settings"
+        android:title="Settings"
+        android:icon="@drawable/baseline_settings_24"
+        />
+</menu>
+
+3) add the menu in the activity_main.xml BottomNavigationView element
+	<com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottomNav"
+        style="@style/Widget.MaterialComponents.BottomNavigationView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:background="@color/settingsColor"
+        app:menu="@menu/bottom_nav_menu" />
+		
+4) Create a new color
+//colors.xml
+	<color name="settingsColor">#3E3E3E</color>
+
+		
+//part 2
+1) Create vector for icons and choose 24 -> size
+2) Create new color file for icon (type = selector) create new color folder in the res directory if it does not exist
+//color.xml
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    
+    <item android:color="@color/white" android:state_checked="true"/>
+    <item android:color="@color/unactive" android:state_checked="false"/>
+
+</selector>
+
+3) Add a new color
+//colors.xml
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="white">#FFFFFFFF</color>
+    <color name="unactive">#C5C5C5</color>
+</resources>
+
+4) apply it to the BottomNavigationView in activity_main.xml
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottomNav"
+        style="@style/Widget.MaterialComponents.BottomNavigationView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:background="@color/settingsColor"
+        app:menu="@menu/bottom_nav_menu"
+        app:itemRippleColor="@color/white"
+        app:itemIconTint="@color/nav_icon_color"
+        app:itemTextColor="@color/nav_icon_color"
+        />
+		
+//part 3
+1) create new blank fragments in the app folder, (2 files will be created, one for the .kt file and one for the .xml file per fragment)
+2) setup fragment navigation function
+	//first clean up the fragment --> remove uneccessary codes. should look like this
+	
+class MyFragmentKt : Fragment() {
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+    }
+
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        // Inflate the layout for this fragment
+        return inflater.inflate(R.layout.fagment_xmlId, container, false)
+    }
+}
+3)Create a code for navigation in MainActivity.kt
+	//in MainActivity
+	private lateinit var binding: ActivityMainBinding//setup view binding -> enable it in the build.gradle file if it does not work
+	
+	//below the onCreate function, create functions
+	    private fun buttonNavViewHandler(){
+        binding.bottomNav.setOnItemSelectedListener {
+            when(it.itemId){
+                R.id.myFragent -> replaceFragment(MyFragmentKt())//change it accordingly
+                R.id.myFragment2 -> replaceFragment(MyFragmentKt2())
+                //add other fragments here
+                else->{}
+            }
+            true
+        }
+    }
+
+    private fun replaceFragment(fragment: Fragment){
+        val fragmentManager = supportFragmentManager
+        val fragmentTransaction = fragmentManager.beginTransaction()
+        fragmentTransaction.replace(R.id.container, fragment)
+        fragmentTransaction.commit()
+    }
+	
+//Thats it, the fragments and navigation should now work

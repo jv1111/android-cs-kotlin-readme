@@ -1,0 +1,18 @@
+//Create a selector drawable in your res/drawable folder.
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- When the RelativeLayout is pressed (tapped) -->
+    <item android:state_pressed="true" android:drawable="@color/color_pressed" />
+    <!-- Default state -->
+    <item android:drawable="@color/color_default" />
+</selector>
+
+//application
+<RelativeLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:clickable="true"
+    android:background="@drawable/background_selector">
+
+    <!-- Add your views and content here -->
+
+</RelativeLayout>

@@ -1,0 +1,6 @@
+//add image
+copy and paste the image to the drawable dir and choose 24
+
+//change image
+binding.imageView.setImageResource(R.drawable.my_image)
+
