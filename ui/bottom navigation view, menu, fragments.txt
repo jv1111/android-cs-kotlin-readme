@@ -1,3 +1,8 @@
+dependency
+    def lifecycle_version = "2.6.1"
+    // ViewModel
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version"
+
 //part 1
 1) Create bottom navigation view
     //in main.xml code...
@@ -149,4 +154,47 @@ class MyFragmentKt : Fragment() {
         fragmentTransaction.commit()
     }
 	
-//Thats it, the fragments and navigation should now work
+4) Add loading function
+//Create a new blank fragment and edit it
+//sample
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".LoadingFragment">
+
+    <ProgressBar
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:indeterminate="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+
+//Modify MainActivity.kt
+//in onCreate
+// Initially show the first fragment
+binding.bottomNavView.selectedItemId = R.id.home
+
+//Modify the replaceFragment function
+private fun replaceFragment(fragment: Fragment){
+        val fragmentManager = supportFragmentManager
+        val fragmentTransaction = fragmentManager.beginTransaction()
+        fragmentTransaction.replace(R.id.frameLayout, LoadingFragment())
+        fragmentTransaction.commit()
+        lifecycleScope.launch {//run on background
+            delay(2000L)
+            withContext(Dispatchers.Main){
+                supportFragmentManager.beginTransaction()
+                    .replace(R.id.frameLayout, fragment)
+                    .commit()
+            }
+        }
+    }
+
+

@@ -1,4 +1,0 @@
-1. create a new color attribute of your choise in res/color.xml e.g primary and secondary
-
-2. update the background color of the activity_main.xml layout to @color/primary
-	android:background = "@color/primary"
