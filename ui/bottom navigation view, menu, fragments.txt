@@ -197,4 +197,25 @@ private fun replaceFragment(fragment: Fragment){
         }
     }
 
+5. To cancel loading on navigation use (private var loadingJob: Job? = null and loadingJob.cancel())
+	
+	private var loadingJob: Job? = null
+	
+	private fun replaceFragment(fragment: Fragment){
+        loadingJob?.cancel()
+
+        val fragmentManager = supportFragmentManager
+        val fragmentTransaction = fragmentManager.beginTransaction()
+        fragmentTransaction.replace(R.id.frameLayout, LoadingFragment())
+        fragmentTransaction.commit()
+        loadingJob = lifecycleScope.launch {
+            delay(2000L)
+            withContext(Dispatchers.Main){
+                supportFragmentManager.beginTransaction()
+                    .replace(R.id.frameLayout, fragment)
+                    .commit()
+            }
+        }
+    }
+
 
