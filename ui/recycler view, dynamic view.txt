@@ -91,6 +91,13 @@ class TodoAdapter(
 
 4. display it in the MainActivity.kt onCreate
 //display the items
+
+		var todoList = mutableListOf(
+            Todo("First Todo", false),
+            Todo("Second Todo", true),
+            Todo("Third Todo", true)
+        )
+
         val adapter = TodoAdapter(todoList)
         val rvTodo = findViewById<RecyclerView>(R.id.rvTodos)
         rvTodo.adapter = adapter
