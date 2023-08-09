@@ -1,9 +1,0 @@
-creating navigation draft
-create new android resource file in app (type: Navigation)
-
-go to activity_main.xml
-remove the text view and select NavHostFragment in the Containers section of the palette
-drag it to the main activity and android studio will popup the Navigation Graphs select the navigation.xml and click ok
-
-in navigtion.xml
-click add destination and create a new destination and select blank fragment and name it e.g Home

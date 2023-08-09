@@ -1,0 +1,120 @@
+//depencencies
+    def nav_version = "2.6.0"
+    implementation "androidx.navigation:navigation-fragment-ktx:$nav_version"
+    implementation "androidx.navigation:navigation-ui-ktx:$nav_version"
+	
+1. create a new navigation
+click Resource Manager
+click navigation tab
+click the add button
+choose add navigation resource file
+
+2. go to nav.xml you created
+click add new destination icon and create blank fragments
+after creating blank fragments connect the it to create an action (click and drag)
+
+3. go to the activity_main.xml and add the nav_host component and select the nav you just created
+//sample code
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/fragmentContainerView"
+        android:name="androidx.navigation.fragment.NavHostFragment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:defaultNavHost="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.5"
+        app:navGraph="@navigation/nav" />
+</androidx.constraintlayout.widget.ConstraintLayout>
+
+4. modify the fragment and navigate using 
+//go to the second activity(this action is auto generated when you connect the fragment in the nav.xml)
+            it.findNavController().navigate(R.id.action_firstFragment_to_secondFragment)
+			//sample code
+			package com.example.kotlinnavigationbymenu
+
+import android.os.Bundle
+import androidx.fragment.app.Fragment
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import androidx.lifecycle.findViewTreeViewModelStoreOwner
+import androidx.navigation.findNavController
+import com.example.kotlinnavigationbymenu.databinding.FragmentFirstBinding
+
+
+class FirstFragment : Fragment() {
+    private lateinit var binding: FragmentFirstBinding
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        binding = FragmentFirstBinding.inflate(inflater, container, false)
+        binding.tv1.setOnClickListener{
+            //go to the second activity(this action is auto generated when you connect the fragment in the nav.xml)
+            it.findNavController().navigate(R.id.action_firstFragment_to_secondFragment)
+        }
+        return binding.root
+    }
+}
+
+//use save args
+5. click + Arguments in the attributes in nav.xml e.g(in the second fragment) //this will be used to pass data within fragments
+//sample code
+<argument
+            android:name="number"
+            app:argType="integer" />
+			
+6. add thi dependency to the top level gradle
+buildscript {
+    repositories {
+        google()
+    }
+    dependencies {
+        def nav_version = "2.6.0"
+        classpath "androidx.navigation:navigation-safe-args-gradle-plugin:$nav_version"
+    }
+}
+
+7. add this plugin to the app gradle and then click rebuild your project
+plugins {
+  id 'androidx.navigation.safeargs.kotlin'
+}
+
+8.use the generated java from the safeargs.kotlin to create a new action with an argument
+val action = FirstFragmentDirections.actionFirstFragmentToSecondFragment(10)
+it.findNavController().navigate(action)
+//sample code 
+binding.tv1.setOnClickListener{
+            val action = FirstFragmentDirections.actionFirstFragmentToSecondFragment(10)
+            //go to the second activity(this action is auto generated when you connect the fragment in the nav.xml)
+            it.findNavController().navigate(action)
+        }
+		
+9. get the args by val args: SecondFragment by navArgs()
+//in the second fragment
+class SecondFragment : Fragment() {
+    
+    val args: SecondFragmentArgs by navArgs();
+	...
+// and in the onCreateView
+	private lateinit var binding: FragmentFirstBinding
+    override fun onCreateView(
+		...
+    ): View? {
+        ...
+        val myNumber = args.number//get the value
+  
+        return binding.root
+    }

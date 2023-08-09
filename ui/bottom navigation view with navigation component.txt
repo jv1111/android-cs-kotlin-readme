@@ -1,0 +1,73 @@
+1. Create a navigation resource file using resource manager
+
+2. Create new destination in the navigation.xml, use the gui add destination
+
+3. Connect the created destination e.g homeFragment and another fragment
+
+4. add a navigation host compnent to the activity_main.xml and select the navigation you created
+//sample code
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/fragmentContainerView"
+        android:name="androidx.navigation.fragment.NavHostFragment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:defaultNavHost="true"
+        app:navGraph="@navigation/navigation"
+        tools:layout_editor_absoluteY="675dp" />
+...
+
+5. Create vector icons in the drawable
+
+6. Create a new resource file for the menu and add the id of the fragments as id and also the icons
+//sample code
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/homeFragment"
+        android:icon="@drawable/baseline_home_24"
+        android:title="Home"
+        />
+    <item
+        android:id="@+id/secondFragment"
+        android:icon="@drawable/baseline_hexagon_24"
+        android:title="Fragment 2"
+        />
+</menu>
+
+
+7.add the menu to the activity_main.xml
+   <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottomNavigationView"
+		android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/black"
+        style="@style/Widget.MaterialComponents.BottomNavigationView.PrimarySurface"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:menu="@menu/menu">
+		
+8.implement the code to the MainActivity.kt
+package com.example.kotlinbottomnavigationusignnavigationcomponent
+class MainActivity : AppCompatActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+
+        val bottomNavView = findViewById<BottomNavigationView>(R.id.bottomNavigationView)
+//      val navController = findNavController(R.id.fragmentContainerView) for <fragment (the old way)
+
+        val navHostFragment = supportFragmentManager.findFragmentById(R.id.fragmentContainerView) as NavHostFragment
+        val navController = navHostFragment.navController
+
+        bottomNavView.setupWithNavController(navController)
+
+    }
+}
