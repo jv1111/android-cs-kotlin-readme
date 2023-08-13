@@ -1,0 +1,67 @@
+//seekbar sample add image
+ <SeekBar
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="160dp"
+        android:thumb="@drawable/thumb_layer_list"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+		
+//create a layerlist in drawable
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:drawable="@drawable/thumb"
+        android:width="35dp"
+        android:height="20dp"/>
+</layer-list>
+
+//copy and paste your image.png in the drawable as thumb.png
+
+//change progress design
+1. create a new drawable resource file layer-list e.g bg_seekbar.xml
+//sample code
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item android:id="@android:id/secondaryProgress">//this will be the secondary attribute
+        <shape android:shape="rectangle">
+            <solid android:color="@color/activeGreen"/>
+            <corners android:radius="12dp"/>
+        </shape>
+    </item>
+
+    <item android:id="@+id/progress">//this will be the progress attribute
+        <clip android:drawable="@drawable/seekbar_clip"/>
+    </item>
+
+</layer-list>
+2. apply it using 
+     android:progressDrawable="@drawable/bg_seekbar"
+	 //sample
+	     <androidx.appcompat.widget.AppCompatSeekBar
+        android:id="@+id/seekBarParkMs"
+        android:layout_width="240dp"
+        android:layout_height="wrap_content"
+        android:min="0"
+        android:max="2000"
+        android:progress="500"
+        android:progressDrawable="@drawable/bg_seekbar"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.502"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.199" />
+		
+3. change the size of the progress using padding whith fixed height
+//sample
+        android:layout_height="24dp"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp"
+		
+
+
+
