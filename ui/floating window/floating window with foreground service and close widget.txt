@@ -1,0 +1,127 @@
+first create a foreground service, check in on foreground service tutorial and modify the code
+
+//RunningService.kt
+class RunningService : Service() {
+
+    private var LAYOUT_FLAG: Int? = null
+    private lateinit var mFloatingView: View
+    private lateinit var windowManager: WindowManager
+    private lateinit var imageClose: ImageView
+	...
+	private fun startFloatingWindow() {
+        //setup proper flag for different android versions
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            LAYOUT_FLAG = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
+        } else {
+            LAYOUT_FLAG = WindowManager.LayoutParams.TYPE_PHONE
+        }
+
+        //inflate
+        mFloatingView = LayoutInflater.from(this).inflate(R.layout.floating_layout, null)
+        val layoutParams = WindowManager.LayoutParams(
+            WindowManager.LayoutParams.WRAP_CONTENT,
+            WindowManager.LayoutParams.WRAP_CONTENT,
+            LAYOUT_FLAG!!,
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+            PixelFormat.TRANSLUCENT
+        )
+
+        //initial position
+        layoutParams.gravity = Gravity.TOP or Gravity.RIGHT
+        layoutParams.x = 0
+        layoutParams.y = 100
+
+        //create a close component
+        val imageParams = WindowManager.LayoutParams(
+            140,
+            140,
+            LAYOUT_FLAG!!,
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+            PixelFormat.TRANSLUCENT
+        )
+        imageParams.gravity = Gravity.BOTTOM or Gravity.CENTER
+        imageParams.y = 100
+
+        windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
+        imageClose = ImageView(this)
+        imageClose.setImageResource(R.drawable.ic_launcher_foreground)
+        imageClose.visibility = View.INVISIBLE
+        windowManager.addView(imageClose, imageParams)
+        windowManager.addView(mFloatingView, layoutParams)
+        mFloatingView.visibility = View.VISIBLE
+
+        val height = windowManager.defaultDisplay.height
+        val width = windowManager.defaultDisplay.width
+
+        val tvWidget = mFloatingView.findViewById<TextView>(R.id.tvWidget)
+
+        tvWidget.text = "running"
+
+        tvWidget.setOnTouchListener(
+            object : View.OnTouchListener {
+                var initialX = 0
+                var initialY = 0
+                var initialTouchX:Float = 0.0f
+                var initialTouchY:Float = 0.0f
+                override fun onTouch(v: View, event: MotionEvent): Boolean {
+                    when (event.action) {
+                        MotionEvent.ACTION_DOWN -> {
+                            imageClose.visibility = View.VISIBLE
+                            initialX = layoutParams.x
+                            initialY = layoutParams.y
+
+                            //touch position
+                            initialTouchX = event.getRawX()
+                            initialTouchY = event.getRawY()
+
+                            return true
+                        }
+
+                        MotionEvent.ACTION_UP -> {
+                            imageClose.visibility = View.GONE
+                            layoutParams.x = initialX+(initialTouchX-event.getRawX()).toInt()
+                            layoutParams.y = initialY+(event.getRawY() - initialTouchY).toInt()
+                            //remove widget
+                            if(layoutParams.y>(height*0.6)){
+                                stopSelf()
+                            }
+                            return true
+                        }
+
+                        MotionEvent.ACTION_MOVE -> {
+                            //calculate x and y coordinates
+                            layoutParams.x = initialX+(initialTouchX-event.getRawX()).toInt()
+                            layoutParams.y = initialY+(event.getRawY()-initialTouchY).toInt()
+
+                            //update layout with view coordinates
+                            windowManager.updateViewLayout(mFloatingView, layoutParams)
+                            if(layoutParams.y>(height*0.6)){
+                                imageClose.setImageResource(R.drawable.ic_launcher_background)
+                            }else{
+                                imageClose.setImageResource(R.drawable.ic_launcher_foreground)
+                            }
+                            return true
+                        }
+                    }
+                    return false
+                }
+            })
+    }
+	...
+	private fun start() {
+		...
+        startForeground(1, notification)
+        startFloatingWindow()
+        isServiceRunning = true;
+    }
+	
+	override fun onDestroy() {
+        super.onDestroy()
+        if(mFloatingView!=null){
+            windowManager.removeView(mFloatingView)
+        }
+        if(imageClose!=null){
+            windowManager.removeView(imageClose)
+        }
+        ...
+    }
