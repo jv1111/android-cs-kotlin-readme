@@ -1,0 +1,8 @@
+//starting an activity
+val intent = Intent(this, MainActivity::class.java)//MainActivity is the activity to start
+intent.putExtra("fragmentToStart", 22)//22 is the data to pass
+startActivity(intent)
+
+//get the extra
+val intent = intent
+val fragmentToStart = intent.getIntExtra("fragmentToStart", -1)//-1 is the default value

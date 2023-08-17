@@ -1,0 +1,26 @@
+//create an interface for callback
+//fragment
+class FragmentName: Fragment(){
+
+    interface CallBackInterface {
+        fun callback()
+    }
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        if(context is CallBackInterface){
+            CallBackInterface = context
+        }
+    }
+	
+	private fun someFunction(){
+        CallBackInterface?.callback()//this will trigger the callback
+    }
+}
+
+//implement the function in the MainActivity.kt or on other activities
+class MainActivity : AppCompatActivity(), FragmentName.CallBackInterface{
+	override fun callback() {
+        //perform an action here
+		//callback is called
+    }
+}
