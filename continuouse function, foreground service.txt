@@ -131,10 +131,12 @@ class MainActivity : AppCompatActivity() {
         btnStart.setOnClickListener{
             Log.i("myTag", "starting")
             //create an intent, convert it to string because it is an enum
-            Intent(applicationContext, RunningService::class.java).also{
-                it.action = RunningService.Actions.START.toString()//call the action inside the RunningService
-                startService(it)//start the service
+            if(SmartKeySystem.isServiceRunning){
+            Intent(applicationContext,  RunningService::class.java).also {
+                it.action = RunningService.Actions.START.toString()
+                startService(it)
             }
+			}
         }
 
         btnStop.setOnClickListener{

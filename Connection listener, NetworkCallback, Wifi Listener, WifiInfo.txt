@@ -1,0 +1,49 @@
+//create ConnectionListener.kt
+class ConnectionListener: ConnectivityManager.NetworkCallback() {
+    private val tag = "myTag"
+
+    override fun onAvailable(network: Network) {
+        super.onAvailable(network)
+        Log.i(tag, "connection available")
+        SmartKeySystem.isWifiConnected.postValue(true)
+    }
+
+    override fun onLost(network: Network) {
+        super.onLost(network)
+        Log.i(tag, "connection lost")
+        SmartKeySystem.isWifiConnected.postValue(false)
+    }
+
+    override fun onCapabilitiesChanged(network: Network, networkCapabilities: NetworkCapabilities) {
+        super.onCapabilitiesChanged(network, networkCapabilities)
+        //detect changes
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            val wifiInfo = networkCapabilities.transportInfo as WifiInfo
+            wifiInfo.ssid//ssid value
+            wifiInfo.rssi//rssi value
+        }
+        Log.i(tag, "networkChanged")
+    }
+}
+
+//register it in the Activity.kt or in the Fragment.kt
+class MainActivity : AppCompatActivity() {
+
+    private lateinit var binding: ActivityMainBinding
+    private var loadingJob: Job? = null
+    private val tag = "myTag main activity"
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+		...
+        registerConnectionListener()
+		...
+    }
+	private fun registerConnectionListener(){
+        val request = NetworkRequest.Builder()
+            .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
+            .build()
+        val connectivityManager = this.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val networkCallback = ConnectionListener(this)
+        connectivityManager.registerNetworkCallback(request, networkCallback)
+    }
+	...

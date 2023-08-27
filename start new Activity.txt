@@ -1,0 +1,3 @@
+val intent = Intent(this@CurrentActivity, ActivityToStart::class.java)
+startActivity(intent)//will start the ActivityToStart
+finish()//will destroy the CurrentActivity

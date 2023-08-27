@@ -1,0 +1,41 @@
+//dependency
+implementation("androidx.fragment:fragment-ktx:1.5.7")
+
+//create a view model
+package com.example.smartkeyv3.fragments.view_model
+
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+
+class SmartKeyViewModel : ViewModel() {
+    val isIgnitionOn: MutableLiveData<Boolean> by lazy{
+        MutableLiveData<Boolean>(false)
+    }
+
+    val isParked: MutableLiveData<Boolean> by lazy{
+        MutableLiveData<Boolean>(false)
+    }
+    //TODO do your api here
+}
+
+//create a view model factory
+package com.example.smartkeyv3.fragments.view_model
+
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+
+class SmartKeyViewModelFactory: ViewModelProvider.Factory {
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        if (modelClass.isAssignableFrom(SmartKeyViewModel::class.java)) {
+            @Suppress("UNCHECKED_CAST")
+            return SmartKeyViewModel() as T
+        }
+        throw IllegalArgumentException("Unknown ViewModel class")
+    }
+}
+
+//implementation
+class Drive : Fragment() {
+    private val viewModel: SmartKeyViewModel by viewModels{ SmartKeyViewModelFactory() }
+	...
+	}

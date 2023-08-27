@@ -1,0 +1,183 @@
+//dependencies
+   // Retrofit for network requests
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+
+    // Retrofit logging (optional, for debugging network requests)
+    implementation("com.squareup.okhttp3:logging-interceptor:5.0.0-alpha.2")
+
+
+//Create an api
+//Retrofit client
+package com.example.mvvm
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
+
+object RetrofitClient {
+    private const val BASE_URL = "https://api.example.com/"
+    private var retrofit: Retrofit? = null
+
+    fun getInstance(): Retrofit {
+        if (retrofit == null) {
+            retrofit = Retrofit.Builder()
+                .baseUrl(BASE_URL)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build()
+        }
+        return retrofit!!
+    }
+}
+//------------------------ Retrofit client method two ----------------
+
+//Create retrofit interface
+package com.example.smartkeyv3.api
+
+import com.google.gson.GsonBuilder
+import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
+import java.util.concurrent.TimeUnit
+
+class RetrofitInstance {
+    companion object{
+        val baseUrl = "http://192.168.8.1/"
+        fun getRetrofitInstance(): Retrofit {
+            val interceptor = HttpLoggingInterceptor().apply {
+                this.level = HttpLoggingInterceptor.Level.NONE//<NONE,BODY,HEADER>
+            }
+            val client = OkHttpClient.Builder().apply {
+                this.addInterceptor(interceptor)
+                    .connectTimeout(30, TimeUnit.SECONDS)//set the timeout to 30 seconds for slow internet connection
+                    .readTimeout(20, TimeUnit.SECONDS)
+                    .writeTimeout(25, TimeUnit.SECONDS)
+            }.build()
+            return Retrofit.Builder()
+                .baseUrl(baseUrl)
+                .addConverterFactory(GsonConverterFactory.create(GsonBuilder().create()))//if you will use json data
+                .client(client)
+                .build()
+        }
+    }
+}
+
+//----------------------------------------------------
+//api service
+package com.example.mvvm
+
+import retrofit2.Call
+import retrofit2.http.GET
+
+interface ApiService {
+    @GET("items")
+    fun getItems(): Call<List<Item>>
+	
+	@Headers("Content-Type: application/json")
+	@POST("/post")
+	fun postRequest(@Body data: Item): Call<Item>
+	
+	//use this if you want to use Response
+	@Headers("Content-Type: application/json")
+    @POST("/")
+    suspend fun postRequest(@Body data: UserInfo): Response<ResponseData>//ResponseData and UserInfo are the model created note what with suspend fun you need to use a coroutine or other background task handler take a look at retrofit post request file
+}
+
+//data or model
+package com.example.mvvm
+
+data class Item (
+    val id: Int,
+    val name: String
+)
+
+//view model
+package com.example.mvvm
+
+import android.util.Log
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+
+class ItemViewModel : ViewModel() {
+
+    private val itemsLiveData = MutableLiveData<List<Item>>()
+    private val repository = ItemRepository()
+
+    fun getItems(): LiveData<List<Item>> {
+        return itemsLiveData
+    }
+
+    fun fetchItems() {
+        repository.fetchItems(object : ItemRepository.ItemRepositoryCallback {
+            override fun onItemsFetched(items: List<Item>) {
+                itemsLiveData.postValue(items)
+            }
+
+            override fun onItemFailed(str: String) {
+                Log.i("myTag", str)
+            }
+
+        })
+    }
+}
+
+//Repository
+package com.example.mvvm
+
+import android.util.Log
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+
+class ItemRepository {
+
+    interface ItemRepositoryCallback {
+        fun onItemsFetched(items: List<Item>)
+        fun onItemFailed(str: String)
+    }
+
+    private val apiService = RetrofitClient.getInstance().create(ApiService::class.java)
+
+    fun fetchItems(callback: ItemRepositoryCallback) {
+        val call = apiService.getItems()
+        call.enqueue(object : Callback<List<Item>> {
+            override fun onResponse(call: Call<List<Item>>, response: Response<List<Item>>) {
+                if (response.isSuccessful) {
+                    callback.onItemsFetched(response.body() ?: emptyList())
+                } else {
+                    Log.i("myTag", "not successful")
+                }
+            }
+
+            override fun onFailure(call: Call<List<Item>>, t: Throwable) {
+                Log.i("myTag", "failed")
+                callback.onItemFailed("awit sayo")
+            }
+        })
+    }
+	
+	//-----YOU CAN USE THIS IF YOU WANT TO USE A MutableLiveData or Array
+	fun setCustomMode(durations: MutableList<Int>, delays: MutableList<Int>){
+        val data = CustomizeModel(
+            duration = durations,//MutableList data e.g CustomizeModel(val duration: MutableList<Int>)
+        )
+
+		//note that the CustomizeModel should be the response that you will get from the server
+		//if the response that you will get from the server is a string the you should use val call: Call<String> and your service should be fun postRequest(@Body data: Item): Call<String>
+        val call: Call<CustomizeModel> = apiService.setCustomMode(data)
+        call.enqueue(object : Callback<CustomizeModel>{
+            override fun onResponse(
+                call: Call<CustomizeModel>,
+                response: Response<CustomizeModel>
+            ) {
+                Log.i(tag, "set custom mode succeed")
+            }
+
+            override fun onFailure(call: Call<CustomizeModel>, t: Throwable) {
+                Log.i(tag, "set custom mode succeed")
+            }
+        })
+    }
+	
+
+}

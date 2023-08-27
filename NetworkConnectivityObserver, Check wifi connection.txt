@@ -112,3 +112,25 @@ class MainActivity : AppCompatActivity() {
 
     }
 }
+
+
+//some usage and newer usage
+final NetworkRequest request =
+       new NetworkRequest.Builder()
+       .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
+       .build();
+  final ConnectivityManager connectivityManager =
+       context.getSystemService(ConnectivityManager.class);
+  final NetworkCallback networkCallback = new NetworkCallback() {
+       ...
+       @Override
+       void onAvailable(Network network) {}
+ 
+       @Override
+       void onCapabilitiesChanged(Network network, NetworkCapabilities networkCapabilities) {
+           WifiInfo wifiInfo = (WifiInfo) networkCapabilities.getTransportInfo();
+       }
+       // etc.
+  };
+  connectivityManager.requestNetwork(request, networkCallback); // For request
+  connectivityManager.registerNetworkCallback(request, networkCallback); // For listen

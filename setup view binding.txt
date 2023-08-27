@@ -53,7 +53,6 @@ dependencies {
 }
 
 //Usage in Fragments
-
 private lateinit var binding: FragmentMyFragmentNameBinding//this is the name of your Fragment
 override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -62,3 +61,5 @@ override fun onCreateView(
         binding = FragmentMyFragmentNameBinding.inflate(inflater, container, false)//2#
         return binding.root//3#
 	}
+	
+//Usage in main activity

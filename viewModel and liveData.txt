@@ -46,3 +46,11 @@ viewModel.currentBoolean.observe{this, Observer{
 val x = MutableLiveData<Int>()
 x.postValue(newValue);//works on background
 x.value = newValue;//works on main thread
+
+
+
+//Or without using by lazy
+//TestViewModel
+class TestViewModel:ViewModel(){
+	val currentNumber = MutableLiveData(1)//1 is the default value or <Int>() = null
+}

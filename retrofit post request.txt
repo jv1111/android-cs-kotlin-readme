@@ -1,16 +1,10 @@
 //add the dependecies into the build.gradle(app)
-    def retrofit_version = "2.9.0"
-    implementation "com.squareup.retrofit2:retrofit:$retrofit_version"
-    implementation "com.squareup.retrofit2:converter-gson:$retrofit_version"//to convert json data if you are using xml use simple xml dependency
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+	implementation("com.squareup.okhttp3:logging-interceptor:4.11.0")
+	
 
-    def coroutines_version = "1.6.0"
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutines_version"
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutines_version"
-
-    implementation "androidx.lifecycle:lifecycle-livedata-ktx:2.6.1"
-	implementation "com.squareup.okhttp3:logging-interceptor:4.11.0"
-
-//Create UserInfo model
+//Create a model
 package com.example.retrofit_post_get
 
 import com.google.gson.annotations.SerializedName
@@ -23,7 +17,7 @@ data class UserInfo(
 )
 //----------------------------------------------------
 
-//Create a ResponseData
+//Create a ResponseData if you will have different response/ use the dataModel if not e.g UserInfo
 package com.example.retrofit_post_get
 
 import com.google.gson.annotations.SerializedName
@@ -42,6 +36,10 @@ import retrofit2.http.Headers
 import retrofit2.http.POST
 //Use the UserInfo as a data to send and the ResponseData as the data to retrieve
 interface Service {
+	
+	@GET("/")
+    suspend fun getRequest(): Response<UserInfo>
+
     @Headers("Content-Type: application/json")
     @POST("/")
     suspend fun postRequest(@Body data: UserInfo): Response<ResponseData>
@@ -49,21 +47,21 @@ interface Service {
 //----------------------------------------------------
 
 //Create retrofit interface
-package com.example.retrofit_post_get
+package com.example.smartkeyv3.api
 
 import com.google.gson.GsonBuilder
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 
 class RetrofitInstance {
     companion object{
-        val baseUrl = "https://postandgettest.onrender.com/"
+        val baseUrl = "http://192.168.8.1/"
         fun getRetrofitInstance(): Retrofit {
-			val interceptor = HttpLoggingInterceptor().apply {
-                this.level = HttpLoggingInterceptor.Level.BODY//<NONE,BODY,HEADER>
+            val interceptor = HttpLoggingInterceptor().apply {
+                this.level = HttpLoggingInterceptor.Level.NONE//<NONE,BODY,HEADER>
             }
             val client = OkHttpClient.Builder().apply {
                 this.addInterceptor(interceptor)
@@ -71,19 +69,18 @@ class RetrofitInstance {
                     .readTimeout(20, TimeUnit.SECONDS)
                     .writeTimeout(25, TimeUnit.SECONDS)
             }.build()
-		
             return Retrofit.Builder()
                 .baseUrl(baseUrl)
-                .addConverterFactory(GsonConverterFactory.create(GsonBuilder().create()))
+                .addConverterFactory(GsonConverterFactory.create(GsonBuilder().create()))//if you will use json data
                 .client(client)
-				.build()
+                .build()
         }
     }
 }
 //----------------------------------------------------
 
 //in the main activity -> onCreate
-val api = RetrofitInstance
+val api: Service = RetrofitInstance
             .getRetrofitInstance()
             .create(Service::class.java)
 
@@ -96,8 +93,12 @@ val api = RetrofitInstance
                 userId = 123
             )
             try{
-                val response = api.postRequest(data)
-                if(response.isSuccessful){
+                val postResponse = api.postRequest(data)
+				val getResponse = api.getRequest();//if you will get the data
+				if(getResponse.isSuccessful){
+					Log.i("get response data", response.body().toString)
+				}
+                if(postResponse.isSuccessful){
                     Log.i("myTag","success")
                     Log.i("myTag", response.body().toString())
                 }else{
