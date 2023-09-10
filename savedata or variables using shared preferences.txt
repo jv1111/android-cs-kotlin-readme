@@ -1,0 +1,142 @@
+package com.example.d2kotlin_spdemo
+
+import android.content.SharedPreferences
+import androidx.appcompat.app.AppCompatActivity
+import android.os.Bundle
+import android.widget.EditText
+
+class MainActivity : AppCompatActivity() {
+
+    private lateinit var nameText:EditText
+    private lateinit var ageText:EditText
+
+    private lateinit var sf:SharedPreferences
+    private lateinit var editor:SharedPreferences.Editor
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+
+        nameText = findViewById(R.id.edName)
+        ageText = findViewById(R.id.edAge)
+
+        sf = getSharedPreferences("my_sf", MODE_PRIVATE)//private = limited to the app
+        editor = sf.edit()
+
+    }
+
+    override fun onPause() {
+        super.onPause()
+        val name = nameText.text.toString()
+        val age = ageText.text.toString().toInt()
+
+//        save
+        editor.apply{
+            putString("sf_name",name)
+            putInt("sf_age",age)
+            commit()
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+//        load
+        val name = sf.getString("sf_name",null)
+        val age = sf.getInt("sf_age",0)
+        nameText.setText(name)
+        if(age!=0){
+            ageText.setText(age.toString())
+        }
+    }
+}
+
+//with companion object
+package com.example.smartkeyv3.utils
+
+import android.content.Context
+import android.content.SharedPreferences
+import android.util.Log
+
+class SharedPreferenceHelper private constructor(context: Context) {
+
+    val tag = "SharedPreference"
+    var sharedPreferences: SharedPreferences
+    var sharedPreferencesEditor: SharedPreferences.Editor
+
+    init {
+        Log.i(tag, "init")
+        sharedPreferences = context.getSharedPreferences("smart_key", Context.MODE_PRIVATE)
+        sharedPreferencesEditor = sharedPreferences.edit()
+    }
+
+    fun sharedPreference(): SharedPreferences{
+        return sharedPreferences
+    }
+
+    fun sharedPreferenceEditor(): SharedPreferences.Editor{
+        return sharedPreferencesEditor
+    }
+
+    companion object{
+
+        //prevent multiple instance
+        @Volatile
+        private var INSTANCE: SharedPreferenceHelper? = null
+
+        fun getInstance(context: Context): SharedPreferenceHelper{
+            //The synchronized(this) block is used for ensuring that a section of code can only be executed by one thread at a time, preventing concurrent access that might lead to data inconsistencies or unexpected behavior.
+            return INSTANCE?: synchronized(this){
+                val instance = SharedPreferenceHelper(context.applicationContext)
+                INSTANCE = instance
+                instance
+            }
+        }
+
+    }
+
+}
+
+//with companion object v2
+package com.example.smartkeyv3.utils
+
+import android.content.Context
+import android.content.SharedPreferences
+import android.util.Log
+
+class SharedPreferencesHelper private constructor(context: Context) {
+    private val TAG = "SharedPreference"
+
+    private var sharedPreferences: SharedPreferences//used to access data and other methods
+    private var sharedPreferencesEditor: SharedPreferences.Editor//used to save data and other methods
+
+    init {
+        Log.i(TAG, "Initialized")
+        sharedPreferences = context.getSharedPreferences("smart_key", Context.MODE_PRIVATE)
+        sharedPreferencesEditor = sharedPreferences.edit()
+    }
+
+    fun sharedPreference(): SharedPreferences {
+        return sharedPreferences
+    }
+
+    fun editor(): SharedPreferences.Editor{
+        return sharedPreferencesEditor
+    }
+
+    companion object{
+        //TO CREATE A SINGLE INSTANCE
+        @Volatile
+        private var INSTANCE: SharedPreferencesHelper? = null
+
+        fun getInstance(context: Context): SharedPreferencesHelper {
+            //return INSTANCE if not null else create an INSTANCE
+            return INSTANCE ?: synchronized(this) {
+                Log.i("SharedPreference", "creating an instance")
+                val instance = SharedPreferencesHelper(context.applicationContext)
+                INSTANCE = instance
+                instance
+            }
+        }
+    }
+
+}

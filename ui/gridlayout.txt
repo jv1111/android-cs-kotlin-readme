@@ -1,0 +1,27 @@
+//activity_main.xml
+<GridLayout
+            android:id="@+id/glModes"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:columnCount="4"
+            android:rowCount="3"
+            android:layout_gravity="top|center">
+
+            <Button
+                android:text="1"
+                android:layout_margin="10sp"
+                android:layout_gravity="fill"
+                android:layout_columnWeight="1"
+                android:layout_rowWeight="1"
+                />
+
+            <Button
+                android:layout_margin="10sp"
+                android:layout_gravity="fill" //fill with and height
+                android:layout_columnWeight="1" //fill with and height
+                android:layout_rowWeight="1" //fill with and height
+                android:layout_row="1" //set position
+                android:layout_column="1" //set position
+                android:text="3" />
+
+        </GridLayout>

@@ -1,0 +1,41 @@
+To achieve this scenario where a callback is triggered in the MainActivity from a function in the FloatingControl class instance within the RunningService, you can use interfaces and listeners to establish communication between different components. Here's how you can do it:
+
+Define an interface for the callback in the FloatingControl class:
+interface MainActivityCallback {
+    fun onCallbackFromFloatingWindow()
+}
+
+Implement the interface in the MainActivity:
+class MainActivity : AppCompatActivity(), MainActivityCallback {
+    // ... other code ...
+
+    override fun onCallbackFromFloatingWindow() {
+        // Your callback logic here
+    }
+}
+
+Modify the FloatingControl class to accept an instance of MainActivityCallback:
+kotlin
+class FloatingControl(private val context: Context, private val callback: MainActivityCallback) {
+    fun iWillTriggerMainActivityCb() {
+        // Trigger the callback
+        callback.onCallbackFromFloatingWindow()
+    }
+    // ... other code ...
+}
+
+Pass the MainActivity instance when creating the FloatingControl instance:
+class RunningService : LifecycleService() {
+    private var floatingWindow: FloatingControl? = null
+
+    // ... other code ...
+
+    override fun onCreate() {
+        super.onCreate()
+        floatingWindow = FloatingControl(this, MainActivity.instance)
+        floatingWindow!!.startFloatingWindow()
+    }
+}
+In this example, you need to make sure you have a way to access the MainActivity instance in the RunningService. You could achieve this by making the MainActivity instance accessible through a singleton or some other means.
+
+Remember that if you're dealing with Android components like Activities and Services, you need to be cautious about potential memory leaks. Make sure to manage the lifecycle of objects properly to avoid issues.

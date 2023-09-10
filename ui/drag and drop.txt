@@ -1,0 +1,186 @@
+//activity_main.xml
+//change the layout to linear
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".MainActivity">
+
+    <LinearLayout
+        android:id="@+id/llTop"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:background="@color/black"
+        android:orientation="horizontal">
+
+        <View
+            android:id="@+id/dragElement"
+            android:layout_margin="10dp"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:background="@color/activeElement" />
+
+        <View
+            android:id="@+id/dragElement2"
+            android:layout_margin="10dp"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:background="#B10000"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/llBottom"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal"
+        android:background="@color/white"
+        android:layout_weight="1">
+
+    </LinearLayout>
+
+</LinearLayout>
+
+//MainActivity
+package com.example.draganddrop
+
+import android.content.ClipData
+import android.content.ClipDescription
+import androidx.appcompat.app.AppCompatActivity
+import android.os.Bundle
+import android.view.DragEvent
+import android.view.View
+import android.view.ViewGroup
+import android.widget.LinearLayout
+import android.widget.Toast
+import com.example.draganddrop.databinding.ActivityMainBinding
+
+class MainActivity : AppCompatActivity() {
+    private lateinit var binding: ActivityMainBinding
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
+        binding.apply {
+            llTop.setOnDragListener(dragListener)
+            llBottom.setOnDragListener(dragListener)
+            dragElement.setOnLongClickListener{
+                val clipText = "Element 1"  // Define the text to be clipped
+                val item = ClipData.Item(clipText)  // Create a ClipData item with the clipText
+                val mimeType = arrayOf(ClipDescription.MIMETYPE_TEXT_PLAIN)  // Define the data type as plain text
+                val data = ClipData(clipText, mimeType, item) // Create ClipData containing the text and data type
+
+                val dragShadowBuilder = View.DragShadowBuilder(it) // Create a drag shadow for the View
+                it.startDragAndDrop(data, dragShadowBuilder, it, 0)//requires api 24
+
+                it.visibility = View.INVISIBLE // Make the View invisible during drag-and-drop
+                true  // Indicate that the long click event has been handled successfully
+            }
+            dragElement2.setOnLongClickListener {
+                val clipText = "Element 2"  // Define the text to be clipped
+                val item = ClipData.Item(clipText)  // Create a ClipData item with the clipText
+                val mimeType = arrayOf(ClipDescription.MIMETYPE_TEXT_PLAIN)  // Define the data type as plain text
+                val data = ClipData(clipText, mimeType, item) // Create ClipData containing the text and data type
+
+                val dragShadowBuilder = View.DragShadowBuilder(it) // Create a drag shadow for the View
+                it.startDragAndDrop(data, dragShadowBuilder, it, 0)//requires api 24
+
+                it.visibility = View.INVISIBLE // Make the View invisible during drag-and-drop
+                true  // Indicate that the long click event has been handled successfully
+            }
+        }
+    }
+
+    val dragListener = View.OnDragListener{ view, event ->
+        when(event.action){
+            DragEvent.ACTION_DRAG_STARTED -> {
+                // Check if the dragged data has the expected MIME type (plain text)
+                event.clipDescription.hasMimeType(ClipDescription.MIMETYPE_TEXT_PLAIN)
+            }
+            DragEvent.ACTION_DRAG_ENTERED -> {
+                // The dragged item has entered the view, so invalidate it for visual feedback
+                // view.invalidate() used to request a redraw or refresh of a View in Android.
+                view.invalidate()
+                true
+            }
+            DragEvent.ACTION_DRAG_LOCATION -> true
+            DragEvent.ACTION_DRAG_EXITED -> {
+                // The dragged item has left the view, so invalidate it for visual feedback
+                view.invalidate()
+                true
+            }
+            DragEvent.ACTION_DROP -> {
+                // Handle the drop event
+                val item = event.clipData.getItemAt(0) // Get the first item from the dropped data
+                val dragData = item.text // Extract text data from the dropped item
+                Toast.makeText(this, dragData, Toast.LENGTH_SHORT).show() // Show a toast with the dragged data
+
+                view.invalidate()
+
+                val dragView = event.localState as View // Get the dragged view
+                val owner = dragView.parent as ViewGroup
+                owner.removeView(dragView) // Remove the dragged view from its original parent
+
+                val destination = view as LinearLayout
+                destination.addView(dragView) // Add the dragged view to the current view (destination)
+
+                dragView.visibility = View.VISIBLE
+                true
+            }
+            DragEvent.ACTION_DRAG_ENDED -> {
+                // The drag operation has ended, invalidate the view for visual feedback
+                view.invalidate()
+                true
+            }
+            else -> false
+        }
+    }
+}
+
+//OUTSIDE DETECTION
+...
+
+private val dragListener = View.OnDragListener{ view, event ->
+        when(event.action){
+		...
+		 DragEvent.ACTION_DRAG_EXITED -> {
+
+                val isOutsideLlMode = !isInsideAnyLlMode(event.x, event.y)
+
+                if (isOutsideLlMode) {
+                    val dragView = event.localState as View
+                    val owner = dragView.parent as ViewGroup
+                    owner.removeView(dragView)
+
+                    // Return the dragged view (btnMode1) to its original llModeOne layout
+                    binding.llModeOne.addView(dragView)
+                    dragView.visibility = View.VISIBLE
+                }
+
+                // The dragged item has left the view, so invalidate it for visual feedback
+                view.invalidate()
+                true
+            }
+		...
+	}
+}
+
+private fun isInsideAnyLlMode(x: Float, y: Float): Boolean {
+        val location = IntArray(2)
+        for (llMode in arrayOf(binding.llModeOne, /* add other llMode layouts here */)) {
+            llMode.getLocationOnScreen(location)
+            val left = location[0]
+            val top = location[1]
+            val right = left + llMode.width
+            val bottom = top + llMode.height
+            if (x >= left && x <= right && y >= top && y <= bottom) {
+                return true
+            }
+        }
+        return false
+    }

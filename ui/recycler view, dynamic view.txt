@@ -39,7 +39,7 @@ dependency
 
 </androidx.constraintlayout.widget.ConstraintLayout>
 
-3. Create an adapter class e.g TodoApdaptor.kt and a data class for Todo
+3. Create an rv data class and adapter class e.g TodoApdaptor.kt and a data class for Todo
 //Data class sample
 package com.example.kotlinrecyclerview
 

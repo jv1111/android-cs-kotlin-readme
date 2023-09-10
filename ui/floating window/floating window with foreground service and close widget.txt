@@ -1,3 +1,5 @@
+//SEPERATE CLASS APPROACH IS WRITTEN BELOW
+
 first create a foreground service, check in on foreground service tutorial and modify the code
 
 //RunningService.kt
@@ -237,3 +239,204 @@ tvWidget.setOnTouchListener(
                         }
 				
 				
+//enable permission using switch
+class YourFragment : Fragment() {
+
+    private lateinit var swFloatingControl: Switch
+
+    // ... Other fragment code ...
+
+    private fun getFloatingWindowPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:${requireActivity().packageName}"))
+            startActivityForResult(intent, 1)
+        }
+    }
+
+    private fun hasOverlayPermission(): Boolean {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            Settings.canDrawOverlays(requireContext())
+        } else {
+            true // Permissions are not required before Android M
+        }
+    }
+
+    // ... Other fragment code ...
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        swFloatingControl = view.findViewById(R.id.swFloatingControl)
+
+        // Set the initial state of the switch based on permission status
+        swFloatingControl.isChecked = hasOverlayPermission()
+
+        swFloatingControl.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
+                if (!hasOverlayPermission()) {
+                    getFloatingWindowPermission()
+                } else {
+                    // Permission is already granted, perform your desired action here
+                }
+            } else {
+                // Handle turning off the floating window feature
+            }
+        }
+    }
+
+    // ... Other fragment code ...
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == 1) {
+            // Check if the user granted the permission
+            if (hasOverlayPermission()) {
+                // Permission granted, perform your desired action
+                swFloatingControl.isChecked = true // Enable the switch
+            } else {
+                // Permission not granted, handle this situation accordingly
+                swFloatingControl.isChecked = false // Disable the switch
+            }
+        }
+    }
+}
+
+//or simply
+private fun getFloatingWindowPermission(){
+        //for the floating window
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+            val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:${requireActivity().packageName}"))
+            startActivityForResult(intent, 1)
+        }
+    }
+
+    private fun hasOverlayPermission(): Boolean {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            Settings.canDrawOverlays(requireContext())
+        } else {
+            true // Permissions are not required before Android M
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == 1) {
+            // Check if the user granted the permission
+            Log.i(tag, "on activity result")
+            Log.i(tag, "has overlay ${hasOverlayPermission()}")
+            binding.swFloatingControl.isChecked = hasOverlayPermission()
+        }
+    }
+	
+	
+package com.example.smartkeyv3.service.FloatingWindow
+
+import android.annotation.SuppressLint
+import android.app.Service
+import android.content.Context
+import android.graphics.PixelFormat
+import android.os.Build
+import android.util.Log
+import android.view.Gravity
+import android.view.LayoutInflater
+import android.view.MotionEvent
+import android.view.View
+import android.view.WindowManager
+import android.widget.RelativeLayout
+import com.example.smartkeyv3.R
+
+class FloatingControl(private val context: Context) {
+
+    private val tag = "myTag FloatingControl"
+    private var LAYOUT_FLAG: Int? = null
+    private var floatingToggle: View? = null
+    private lateinit var windowManager: WindowManager
+
+    @SuppressLint("ClickableViewAccessibility")
+    fun startFloatingWindow() {
+        //setup proper flag for different android versions
+        LAYOUT_FLAG = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
+        } else {
+            WindowManager.LayoutParams.TYPE_PHONE
+        }
+
+        //inflate
+        floatingToggle = LayoutInflater.from(context).inflate(R.layout.floating_toggle, null)
+        val floatingLayoutParams = WindowManager.LayoutParams(
+            WindowManager.LayoutParams.WRAP_CONTENT,
+            WindowManager.LayoutParams.WRAP_CONTENT,
+            LAYOUT_FLAG!!,
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+            PixelFormat.TRANSLUCENT
+        )
+
+        //initial position
+        floatingLayoutParams.gravity = Gravity.TOP or Gravity.RIGHT
+        floatingLayoutParams.x = 0
+        floatingLayoutParams.y = 100
+
+        windowManager = context.getSystemService(Service.WINDOW_SERVICE) as WindowManager
+        windowManager.addView(floatingToggle, floatingLayoutParams)
+
+        val height = windowManager.defaultDisplay.height
+        val width = windowManager.defaultDisplay.width
+
+        val control = floatingToggle!!.findViewById<RelativeLayout>(R.id.floatingControlLayout)
+
+        control.setOnTouchListener(
+            object : View.OnTouchListener {
+                var initialX = 0
+                var initialY = 0
+                var initialTouchX: Float = 0.0f
+                var initialTouchY: Float = 0.0f
+                var moved = false
+                override fun onTouch(view: View?, event: MotionEvent?): Boolean {
+                    when (event?.action) {
+                        MotionEvent.ACTION_DOWN -> {
+                            initialX = floatingLayoutParams.x
+                            initialY = floatingLayoutParams.y
+                            //touch position
+                            initialTouchX = event.getRawX()
+                            initialTouchY = event.getRawY()
+                            return true
+                        }
+
+                        MotionEvent.ACTION_UP -> {
+                            if (!moved) {
+                                Log.i(tag, "tapped")
+                            }
+                            moved = false
+                            floatingLayoutParams.x =
+                                initialX + (initialTouchX - event.getRawX()).toInt()
+                            floatingLayoutParams.y =
+                                initialY + (event.getRawY() - initialTouchY).toInt()
+                            return true
+                        }
+
+                        MotionEvent.ACTION_MOVE -> {
+                            moved = true
+                            //calculate x and y coordinates
+                            floatingLayoutParams.x =
+                                initialX + (initialTouchX - event.getRawX()).toInt()
+                            floatingLayoutParams.y =
+                                initialY + (event.getRawY() - initialTouchY).toInt()
+                            //update layout with view coordinates
+                            windowManager.updateViewLayout(floatingToggle, floatingLayoutParams)
+                            return true
+                        }
+                    }
+                    return false
+                }
+            }
+        )
+    }
+
+    fun stopFloatingWindow(){
+        if(floatingToggle!=null){
+            Log.i(tag, "removing floating window")
+            windowManager.removeView(floatingToggle)
+        }
+    }
+
+}
