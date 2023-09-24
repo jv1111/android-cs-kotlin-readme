@@ -1,0 +1,111 @@
+//retrofit website https://github.com/square/retrofit
+//add the dependecies into the build.gradle(app)
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+	implementation("com.squareup.okhttp3:logging-interceptor:4.11.0")
+	
+
+//Create a model
+package com.example.retrofit_post_get
+
+import com.google.gson.annotations.SerializedName
+
+data class UserInfo(
+    val body: String?,
+    val id: Int?,
+    val title: String?,
+    val userId: Int?
+)
+//----------------------------------------------------
+
+//Create a ResponseData if you will have different response/ use the dataModel if not e.g UserInfo
+package com.example.retrofit_post_get
+
+import com.google.gson.annotations.SerializedName
+data class ResponseData (
+        @SerializedName("message")
+        val message: String?
+)
+//---------------------------------------------------- 
+
+//Create Service
+package com.example.retrofit_post_get
+
+import retrofit2.Response
+import retrofit2.http.Body
+import retrofit2.http.Headers
+import retrofit2.http.POST
+//Use the UserInfo as a data to send and the ResponseData as the data to retrieve
+interface Service {
+	
+	@GET("/")
+    suspend fun getRequest(): Response<UserInfo>
+
+    @Headers("Content-Type: application/json")
+    @POST("/")
+    suspend fun postRequest(@Body data: UserInfo): Response<ResponseData>
+}
+//----------------------------------------------------
+
+//Create retrofit interface
+package com.example.smartkeyv3.api
+
+import com.google.gson.GsonBuilder
+import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
+import java.util.concurrent.TimeUnit
+
+class RetrofitInstance {
+    companion object{
+        val baseUrl = "http://192.168.8.1/"
+        fun getRetrofitInstance(): Retrofit {
+            val interceptor = HttpLoggingInterceptor().apply {
+                this.level = HttpLoggingInterceptor.Level.NONE//<NONE,BODY,HEADER>
+            }
+            val client = OkHttpClient.Builder().apply {
+                this.addInterceptor(interceptor)
+                    .connectTimeout(30, TimeUnit.SECONDS)//set the timeout to 30 seconds for slow internet connection
+                    .readTimeout(20, TimeUnit.SECONDS)
+                    .writeTimeout(25, TimeUnit.SECONDS)
+            }.build()
+            return Retrofit.Builder()
+                .baseUrl(baseUrl)
+                .addConverterFactory(GsonConverterFactory.create(GsonBuilder().create()))//if you will use json data
+                .client(client)
+                .build()
+        }
+    }
+}
+//----------------------------------------------------
+
+//in the main activity -> onCreate
+val api: Service = RetrofitInstance
+            .getRetrofitInstance()
+            .create(Service::class.java)
+
+//then make a request
+		lifecycleScope.launch(Dispatchers.IO) {
+            val data = UserInfo(
+                body = "ow",
+                id = null,
+                title = "hey",
+                userId = 123
+            )
+            try{
+                val postResponse = api.postRequest(data)
+				val getResponse = api.getRequest();//if you will get the data
+				if(getResponse.isSuccessful){
+					Log.i("get response data", response.body().toString)
+				}
+                if(postResponse.isSuccessful){
+                    Log.i("myTag","success")
+                    Log.i("myTag", response.body().toString())
+                }else{
+                    Log.i("myTag","fail")
+                }
+            }catch (e: Exception){
+                Log.i("myTag", e.message.toString())
+            }
+        }

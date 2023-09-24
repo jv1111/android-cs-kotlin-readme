@@ -1,0 +1,85 @@
+//install the dependencies
+//build.gradle
+plugins {
+    id("com.android.application")
+    id("org.jetbrains.kotlin.android")
+}
+...
+dependencies {
+    val lottieVersion = "6.1.0"
+    implementation ("com.airbnb.android:lottie:$lottieVersion")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.2")
+
+	...
+}
+
+//create the button
+//activity_main.xml
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <RelativeLayout
+        android:id="@+id/button"
+        android:clickable="true"
+        android:background="@drawable/green_btn_bg_ripple"
+        android:layout_margin="25dp"
+        android:layout_centerInParent="true"
+        android:layout_width="match_parent"
+        android:layout_height="50dp">
+        
+        <TextView
+            android:id="@+id/btnText"
+            android:textSize="20sp"
+            android:layout_centerInParent="true"
+            android:text="Button"
+            android:textColor="@color/white"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+        
+        <com.airbnb.lottie.LottieAnimationView
+            android:id="@+id/btnAnimation"
+            app:lottie_rawRes="@raw/animation_lmwwu4yk"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:autofillHints="false"
+            android:layout_centerInParent="true"
+            android:visibility="gone"
+            app:lottie_loop="true"
+            app:lottie_autoPlay="true"
+            />
+
+    </RelativeLayout>
+
+</RelativeLayout>
+
+//in MainActivity.kt
+class MainActivity : AppCompatActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+
+        val buttonLayout = findViewById<RelativeLayout>(R.id.button)
+        val btnText = findViewById<TextView>(R.id.btnText)
+        val btnAnim = findViewById<LottieAnimationView>(R.id.btnAnimation)
+
+        //Button click
+        buttonLayout.setOnClickListener{
+            btnAnim.visibility = View.VISIBLE
+            btnAnim.playAnimation()
+            btnText.visibility = View.GONE
+
+            lifecycleScope.launch {
+                delay(1000)
+                btnAnim.visibility = View.GONE
+                btnAnim.pauseAnimation()
+                btnText.visibility = View.VISIBLE
+            }
+        }
+
+    }
+}

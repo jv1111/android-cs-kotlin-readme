@@ -179,5 +179,31 @@ class ItemRepository {
         })
     }
 	
+	//------USING COROUTINES/SCOPE WITH RESPONSE DATA TYPE---------------
+	class Repository(private val context: Context){...
+	...
+	fun updateModes(modeList: MutableList<Int>){
+        val repositoryScope = CoroutineScope(Dispatchers.IO)
+        val activity = context as MainActivity
+        activity.lifecycleScope.launch {
+            try {
+                val data = SelectedModeData(modeList, false)
+                Log.i(tag, "data $data")
+                val response = apiService.updateModes(data)
+                Log.i(tag, "sending api")
+                if(response.isSuccessful){
+                    withContext(Dispatchers.Main){
+                        Toast.makeText(context, "Success fully changed", Toast.LENGTH_LONG).show()
+                    }
+                }else{
+                    withContext(Dispatchers.Main){
+                        Toast.makeText(context, "Failed", Toast.LENGTH_LONG).show()
+                    }
+                }
+            }catch (e: Exception){
+                Log.i(tag, "error ${e.message}")
+            }
+        }
+    }
 
 }

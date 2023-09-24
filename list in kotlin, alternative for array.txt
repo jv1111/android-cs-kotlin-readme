@@ -35,3 +35,14 @@ fun main() {
         println(color)
     }
 }
+
+//for lateinit
+ private lateinit var modesList: MutableList<Int>
+ modesList = mutableListOf()//without fixed size
+  modesList = MutableList(5) {0}//with fixed size
+ 
+//add at specified index
+colors.add(1, "Yellow")//index 1
+
+//get the index of item
+

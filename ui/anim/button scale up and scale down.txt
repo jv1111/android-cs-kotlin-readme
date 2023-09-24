@@ -1,0 +1,52 @@
+//create new animation resource file
+
+//res/anim/scale_down.xml
+<?xml version="1.0" encoding="utf-8"?>
+<scale xmlns:android="http://schemas.android.com/apk/res/android"
+    android:fromYScale="1.2"
+    android:fromXScale="1.2"
+    android:toXScale="1"
+    android:toYScale="1"
+    android:pivotY="50%"
+    android:pivotX="50%"
+	android:duration="100"
+    >
+
+</scale>
+
+//res/anim/scale_up.xml 
+<?xml version="1.0" encoding="utf-8"?>
+<scale
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:fromXScale="1"
+    android:fromYScale="1"
+    android:toYScale="1.2"
+    android:toXScale="1.2"
+    android:pivotY="50%"
+    android:pivotX="50%"
+    android:fillAfter="true"
+	android:duration="100"
+    >
+
+</scale>
+
+//in the MainActivity.kt
+class MainActivity : AppCompatActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+       ...
+        val button = findViewById<Button>(R.id.button)
+
+        val scaleUp = AnimationUtils.loadAnimation(this, R.anim.scale_up)
+        val scaleDown = AnimationUtils.loadAnimation(this, R.anim.scale_down)
+
+        button.setOnTouchListener { view, motionEvent ->
+            if (motionEvent.action == MotionEvent.ACTION_UP){
+                button.startAnimation(scaleDown)
+            }else if(motionEvent.action == MotionEvent.ACTION_DOWN){
+                button.startAnimation(scaleUp)
+            }
+            true
+        }
+    }
+}
+

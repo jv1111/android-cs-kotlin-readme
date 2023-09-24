@@ -4,3 +4,16 @@ copy and paste the image to the drawable dir and choose 24
 //change image
 binding.imageView.setImageResource(R.drawable.my_image)
 
+//fit imageButton
+<ImageButton
+                android:id="@+id/mode1"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_row="0"
+                android:layout_column="0"
+                android:layout_margin="5sp"
+                android:src="@drawable/mode_1"
+                android:scaleType="fitCenter"//fit image to the imageButton size
+                android:background="#0F9800" />
+
+

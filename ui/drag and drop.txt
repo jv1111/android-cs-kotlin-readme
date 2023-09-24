@@ -81,8 +81,9 @@ class MainActivity : AppCompatActivity() {
                 it.visibility = View.INVISIBLE // Make the View invisible during drag-and-drop
                 true  // Indicate that the long click event has been handled successfully
             }
-            dragElement2.setOnLongClickListener {
-                val clipText = "Element 2"  // Define the text to be clipped
+			//With int data long with the text data
+            btnMode1.setOnLongClickListener {
+                val clipText = "Element 1"  // Define the text to be clipped
                 val item = ClipData.Item(clipText)  // Create a ClipData item with the clipText
                 val mimeType = arrayOf(ClipDescription.MIMETYPE_TEXT_PLAIN)  // Define the data type as plain text
                 val data = ClipData(clipText, mimeType, item) // Create ClipData containing the text and data type
@@ -141,46 +142,3 @@ class MainActivity : AppCompatActivity() {
         }
     }
 }
-
-//OUTSIDE DETECTION
-...
-
-private val dragListener = View.OnDragListener{ view, event ->
-        when(event.action){
-		...
-		 DragEvent.ACTION_DRAG_EXITED -> {
-
-                val isOutsideLlMode = !isInsideAnyLlMode(event.x, event.y)
-
-                if (isOutsideLlMode) {
-                    val dragView = event.localState as View
-                    val owner = dragView.parent as ViewGroup
-                    owner.removeView(dragView)
-
-                    // Return the dragged view (btnMode1) to its original llModeOne layout
-                    binding.llModeOne.addView(dragView)
-                    dragView.visibility = View.VISIBLE
-                }
-
-                // The dragged item has left the view, so invalidate it for visual feedback
-                view.invalidate()
-                true
-            }
-		...
-	}
-}
-
-private fun isInsideAnyLlMode(x: Float, y: Float): Boolean {
-        val location = IntArray(2)
-        for (llMode in arrayOf(binding.llModeOne, /* add other llMode layouts here */)) {
-            llMode.getLocationOnScreen(location)
-            val left = location[0]
-            val top = location[1]
-            val right = left + llMode.width
-            val bottom = top + llMode.height
-            if (x >= left && x <= right && y >= top && y <= bottom) {
-                return true
-            }
-        }
-        return false
-    }
