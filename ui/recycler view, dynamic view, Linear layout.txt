@@ -1,0 +1,170 @@
+dependency
+    implementation "androidx.recyclerview:recyclerview:1.3.1"
+
+1. create a recyclerview component in your  xml file e.g activity_main.xml
+//sample
+	 <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvTodos"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"/>
+		
+2. create a new layout file for the item e.g item_todo.xml (this will what the item will look like)
+//sample
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="100dp"
+    android:padding="16dp">
+
+    <TextView
+        android:id="@+id/tvTitle"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="title"
+        android:textSize="24sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/cbDone"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <CheckBox
+        android:id="@+id/cbDone"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+
+3. Create an rv data class and adapter class e.g TodoApdaptor.kt and a data class for Todo
+//Data class sample
+package com.example.kotlinrecyclerview
+
+data class Todo(
+    val title: String,
+    val isChecked: Boolean
+)
+
+//Adaptor sample
+package com.example.kotlinrecyclerview
+
+import android.util.Log
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.CheckBox
+import android.widget.TextView
+import androidx.recyclerview.widget.RecyclerView
+
+class TodoAdapter(
+    var todos: List<Todo>//a list of todo
+) : RecyclerView.Adapter<TodoAdapter.TodoViewHolder>() {
+    private val tag = "myTag TodoAdapter"
+    inner class TodoViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TodoViewHolder {
+        Log.i(tag, "on create view holder")
+        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_todo, parent, false)
+        return TodoViewHolder(view)
+    }
+
+    override fun getItemCount(): Int {
+        Log.i(tag, "getItemCount")
+        return todos.size//number of items
+    }
+
+    override fun onBindViewHolder(holder: TodoViewHolder, position: Int) {
+        Log.i(tag, "onBind")
+        //the single item of the recycler view (each item)
+        holder.itemView.apply {
+            val tvTitle = findViewById<TextView>(R.id.tvTitle)
+            val cbDone = findViewById<CheckBox>(R.id.cbDone)
+            tvTitle.text = todos[position].title//position is the index
+            cbDone.isChecked = todos[position].isChecked
+        }
+    }
+
+}
+
+4. display it in the MainActivity.kt onCreate
+//display the items
+
+		var todoList = mutableListOf(
+            Todo("First Todo", false),
+            Todo("Second Todo", true),
+            Todo("Third Todo", true)
+        )
+
+        val adapter = TodoAdapter(todoList)
+        val rvTodo = findViewById<RecyclerView>(R.id.rvTodos)
+        rvTodo.adapter = adapter
+        rvTodo.layoutManager = LinearLayoutManager(this)//select layout manager
+
+        //add todo
+        val btnAddTodo = findViewById<Button>(R.id.btnAddTodo)
+        val etTodo = findViewById<EditText>(R.id.etTodo)
+        btnAddTodo.setOnClickListener{
+            val title = etTodo.text.toString()
+            val todo = Todo(title, false)
+            todoList.add(todo)//will add todo list
+            //adapter.notifyDataSetChanged()// will update the entire item
+            adapter.notifyItemInserted(todoList.size - 1)//insert new item at the last index
+        }
+
+5. You can create a click listener by 
+			//set click listener for the entire item view
+            setOnClickListener{
+                Log.i("myTag adapter", "${tvTitle.text} is clicked")
+            }
+            cbDone.setOnCheckedChangeListener{_ , isChecked->
+                Log.i("myTag adapter", "position: $position is checked: $isChecked")
+            }
+
+6. You can also create a listener by creating an interface
+//first create an interface 
+interface TodoListener {
+    fun checkBoxListener(message: String)
+}
+//implement the interface to the main activity or your activity and pass this as a callback
+class MainActivity : AppCompatActivity(), TodoListener{
+...
+	val adapter = TodoAdapter(this, todoList)
+...
+    override fun checkBoxListener(message: String) {
+        Log.i(tag, message)
+    }
+}
+//Then create a function for the callback in the adapter
+class TodoAdapter(
+    private val todoCallback: TodoListener,
+	...
+	) : RecyclerView.Adapter<TodoAdapter.TodoViewHolder>() {
+	...
+		override fun onBindViewHolder(holder: TodoViewHolder, position: Int) {
+        Log.i(tag, "onBind")
+        //the single item of the recycler view (each item)
+        holder.itemView.apply {
+            val tvTitle = findViewById<TextView>(R.id.tvTitle)
+            val cbDone = findViewById<CheckBox>(R.id.cbDone)
+            tvTitle.text = todos[position].title//position is the index
+            cbDone.isChecked = todos[position].isChecked
+
+            //set click listener for the entire item view
+            setOnClickListener{
+                Log.i("myTag adapter", "${tvTitle.text} is clicked")
+            }
+            cbDone.setOnCheckedChangeListener{_ , isChecked->
+                Log.i("myTag adapter", "position: $position is checked: $isChecked")
+                onCheckChanged(todoCallback)
+            }
+
+        }
+		}
+		fun onCheckChanged(cb: TodoListener){
+			cb.checkBoxListener("i am from adapter")
+		}
+    }
+	}

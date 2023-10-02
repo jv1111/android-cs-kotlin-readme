@@ -1,0 +1,21 @@
+// Obtain a reference to your view
+val myView = findViewById<View>(R.id.myView)
+
+// Create LayoutParams for your view
+val layoutParams = myView.layoutParams as ViewGroup.MarginLayoutParams
+
+// Set the new left margin (in pixels)
+val newLeftMargin = 20 // Change this to your desired margin value
+
+layoutParams.leftMargin = newLeftMargin
+
+// Apply the modified LayoutParams to your view
+myView.layoutParams = layoutParams
+
+
+//sample usage on item drop
+val layoutParams = dragView.layoutParams as ViewGroup.MarginLayoutParams
+layoutParams.marginStart = 0
+layoutParams.marginEnd = 0
+layoutParams.topMargin = 0
+layoutParams.bottomMargin = 0

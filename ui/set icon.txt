@@ -1,0 +1,1 @@
+1. right click on res folder and create a new image asset, (dont modify the name which is launcher_ic by default)

@@ -1,0 +1,11 @@
+open the command promp and go to the dex2jar directory
+type the script below to decompile the apk
+d2j-dex2jar "myApp.apk"
+
+if you are using vm
+Go To
+Control Panel>Systerm and secutiy>system>Advanced system settings(tab)>Environment Variables>System Variables>New
+
+Variable name: _JAVA_OPTIONS
+Variable value: -Xmx512M
+                                                                   

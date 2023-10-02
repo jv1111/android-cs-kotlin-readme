@@ -1,0 +1,2 @@
+
+this.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT

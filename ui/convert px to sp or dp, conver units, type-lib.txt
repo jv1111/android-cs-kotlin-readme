@@ -1,0 +1,23 @@
+package com.example.mdl.util
+
+import android.content.Context
+
+class UI(val context: Context) {
+
+
+    fun dp(dp: Int): Int{
+        // Convert dp to pixels
+        val dpValue = 5 // Change this to your desired dp value
+        val scale = context.resources.displayMetrics.density
+        val pixelValueInDp = (dpValue * scale + 0.5f).toInt()
+        return pixelValueInDp
+    }
+
+    fun sp(sp: Int): Int{
+        // Convert sp to pixels
+        val spValue = 5 // Change this to your desired sp value
+        val scaledDensity = context.resources.displayMetrics.scaledDensity
+        val pixelValueInSp = (spValue * scaledDensity + 0.5f).toInt()
+        return pixelValueInSp
+    }
+}

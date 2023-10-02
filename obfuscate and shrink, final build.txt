@@ -1,0 +1,52 @@
+//obfuscate and shrink
+//build.gradle (app)
+...
+android {
+...
+	buildTypes {
+			release {
+				isMinifyEnabled = true//set to true
+				isShrinkResources = true
+				proguardFiles(
+					getDefaultProguardFile("proguard-android-optimize.txt"),
+					"proguard-rules.pro"
+				)
+			}
+		}
+...
+
+//To not obfuscate classes and its member such as data classes use the Keep annotation
+@Keep//prevent obfuscation or use the proguard rules
+data class NewRresponse(
+    val title: String
+)
+
+//To not obfuscate using proguard config
+-keep class com.example.build.NewRresponse
+#if you want to keep all the files in the folder/directory use -keep class com.example.build.directoryName.*
+#if you want to keep selected files in the folder/directory use -keep class com.example.build.directoryName.* { ClassName } include all functions and classes
+#if you want to keep selected files in the folder/directory use -keep class com.example.build.directoryName.* { *; } include all functions and classes
+
+//if you are using retrofit2 add these to the proguard rules
+# Keep generic signature of Call, Response (R8 full mode strips signatures from non-kept items).
+-keep,allowobfuscation,allowshrinking interface retrofit2.Call
+-keep,allowobfuscation,allowshrinking class retrofit2.Response
+
+# With R8 full mode generic signatures are stripped for classes that are not
+# kept. Suspend functions are wrapped in continuations where the type argument
+# is used.
+-keep,allowobfuscation,allowshrinking class kotlin.coroutines.Continuation
+
+
+//build your project or generate signed apk if you are gonna deploy it
+click build -> build bundles -> build bundles
+select build bundles if you are gonna upload it on playstore
+select build apk if you are just creating an installer
+
+//generate signed apk
+click build -> generate signed apk
+select build bundles if you are gonna upload it on playstore
+select build apk if you are just creating an installer
+
+//create a key with password just fill up the following
+//after clicking next choose release
