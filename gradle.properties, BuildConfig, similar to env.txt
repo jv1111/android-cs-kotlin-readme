@@ -1,0 +1,16 @@
+//add this to your gradle.properties
+android.defaults.buildfeatures.buildconfig=true
+API_KEY=http://192.168.8.1/
+
+//add this to your build.gradle
+...
+buildTypes {
+        debug{
+            buildConfigField("String", "API_KEY", "\"${project.findProperty("API_KEY")}\"")
+        }
+        release {
+			...
+            buildConfigField("String", "API_KEY", "\"${project.findProperty("API_KEY")}\"")
+            ...
+        }
+    }

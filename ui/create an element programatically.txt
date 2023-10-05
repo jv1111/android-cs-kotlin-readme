@@ -1,0 +1,17 @@
+//In this example we will create space element equivalent to <Space .../>
+
+// Create a Space element
+val spaceElement = Space(context)
+
+// Set the dimensions of the Space element (width and height)
+val layoutParams = LinearLayout.LayoutParams(
+    LinearLayout.LayoutParams.WRAP_CONTENT, // width
+    LinearLayout.LayoutParams.WRAP_CONTENT  // height
+)
+
+// Set any additional layout parameters if needed
+layoutParams.weight = 1f // Example: Sets weight to evenly distribute space in a LinearLayout
+
+// Add the Space element to a LinearLayout (or any other ViewGroup)
+val linearLayout = findViewById<LinearLayout>(R.id.linearLayout) // Replace with your LinearLayout ID
+linearLayout.addView(spaceElement, layoutParams)
