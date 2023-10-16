@@ -8,7 +8,7 @@ implementation "androidx.lifecycle:lifecycle-livedata-ktx:$lifecycle_version"
 1. Create a new empty activity, right click the app folder and create a new empty activity,
 2. modify the manifest file to launch the app at the new activity e.g SplashActivity.kt
 //Put the intent to the new activity
-<activity
+		<activity
             android:name=".SplashScreen"
             android:exported="true" >
             <intent-filter>
@@ -16,10 +16,11 @@ implementation "androidx.lifecycle:lifecycle-livedata-ktx:$lifecycle_version"
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+		
         <activity
             android:name=".MainActivity"
             android:exported="false"/>
-			
+		...
 3. in SplashScreenActivity.kt or The Activity.kt you created
 package com.example.kotlinspashscreen
 

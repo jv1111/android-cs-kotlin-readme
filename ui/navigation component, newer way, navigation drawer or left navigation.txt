@@ -39,7 +39,7 @@ after creating blank fragments connect the it to create an action (click and dra
 </androidx.constraintlayout.widget.ConstraintLayout>
 
 4. modify the fragment and navigate using 
-//go to the second activity(this action is auto generated when you connect the fragment in the nav.xml)
+//go to the fragment.kt(this action is auto generated when you connect the fragment in the nav.xml)
             it.findNavController().navigate(R.id.action_firstFragment_to_secondFragment)
 			//sample code
 			package com.example.kotlinnavigationbymenu
