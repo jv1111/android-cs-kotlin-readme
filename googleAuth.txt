@@ -1,0 +1,239 @@
+//### ADD THIS DEPENENCY ###
+implementation("com.google.android.gms:play-services-auth:20.7.0")
+//### GOOGLE AUTH WITHOUT SERVER ###
+
+//### SETUP GOOGLE ACCOUNT IN CONSOLE ###
+1. go to https://console.cloud.google.com
+2. create a new project
+3. then create Oauth consent screen
+4. go to credentials and then create a new credential for Oauth 2.0 Client ID
+5. Choose android for application type
+6. Add the package name of your android project
+7. Get the sha key
+	go to android studio settings/experimantal and check Configure all Gradle task during Gradle Sync
+	then click the gradle tab at the right side of the screen
+	sync gradle
+	go to YourApp/task/android/signingReport
+	and copy the sha1
+	then proceed creating your credential
+
+
+//#### GoogleAuth.kt ####
+import android.app.Activity
+import android.content.Context
+import android.content.Intent
+import android.widget.Toast
+import com.example.messengerapp.Data.State
+import com.example.messengerapp.LoginActivity
+import com.example.messengerapp.MainActivity
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount
+import com.google.android.gms.auth.api.signin.GoogleSignInClient
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.api.ApiException
+
+class GoogleAuth<T: Activity>(private val activity: T) {
+    private lateinit var googleSignInOptions: GoogleSignInOptions
+    private lateinit var googleSignInClient: GoogleSignInClient
+    val googleLoginCode = 1000
+
+    init {
+        setupGoogleAuth()
+    }
+
+    interface GoogleAuthCallback{
+        fun googleSignInCallback()
+    }
+
+    private fun setupGoogleAuth(){
+        // Configure sign-in to request the user's ID, email address, and basic
+        // profile. ID and basic profile are included in DEFAULT_SIGN_IN.
+        googleSignInOptions = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).requestEmail().build()
+        // Build a GoogleSignInClient with the options specified by googleSignInOptions.
+        googleSignInClient = GoogleSignIn.getClient(activity, googleSignInOptions)
+    }
+
+    fun googleSignIn(){
+        val  signInIntent = googleSignInClient.signInIntent
+        activity.startActivityForResult(signInIntent, googleLoginCode)
+    }
+
+    fun signInResultHandler(data: Intent?, callback: GoogleAuthCallback){
+        val task = GoogleSignIn.getSignedInAccountFromIntent(data)
+        try {
+            task.getResult()
+            State.isLoggedIn = true
+            callback.googleSignInCallback()
+        }catch (e: ApiException){
+            Toast.makeText(activity.applicationContext, "Something went wrong", Toast.LENGTH_LONG).show()
+        }
+    }
+
+    fun signOutGoogle(){
+        googleSignInClient.signOut().addOnCompleteListener {
+            Intent(activity, LoginActivity::class.java).also {
+                activity.finish()
+                activity.startActivity(it)
+            }
+        }
+    }
+
+    fun getGoogleSignInClient(): GoogleSignInClient{
+        // Configure sign-in to request the user's ID, email address, and basic
+        // profile. ID and basic profile are included in DEFAULT_SIGN_IN.
+        googleSignInOptions = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).requestEmail().build()
+        googleSignInClient = GoogleSignIn.getClient(activity, googleSignInOptions)
+        return googleSignInClient
+    }
+
+    fun getAccountData(): GoogleSignInAccount {
+        val account = GoogleSignIn.getLastSignedInAccount(activity)!!
+        return account
+    }
+
+}
+
+//#### Activity ####
+class RegisterActivity : AppCompatActivity(), GoogleAuth.GoogleAuthCallback {
+    ...
+    private lateinit var googleAuth: GoogleAuth<RegisterActivity>
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        ...
+        googleAuth = GoogleAuth(this)
+        btnEvents()
+    }
+
+    private fun btnEvents(){
+        binding.apply {
+            // Set the dimensions of the sign-in button.
+            btnGoogleSignIn.setSize(SignInButton.SIZE_STANDARD)
+            btnGoogleSignIn.setOnClickListener{
+                googleAuth.googleSignIn()
+            }
+        }
+    }
+
+    fun navigateToHome(){
+        val intent = Intent(this@RegisterActivity, MainActivity::class.java)
+        startActivity(intent)
+        finish()
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if(requestCode == googleAuth.googleLoginCode) googleAuth.signInResultHandler(data, this)
+    }
+
+    override fun googleSignInCallback() {
+        navigateToHome()
+    }
+}
+
+//#### GET Account info ####
+val account = GoogleSignIn.getLastSignedInAccount(this)
+Log.i(tag, "test")
+Log.i(tag, account?.givenName.toString())
+
+
+//### WITH SERVER INTEGRATION ###
+//### CREATE NEW CREDENTIALS TYPE OF WEB ###
+
+//### res/values/strings.xml ###
+<resources>
+	...
+    <string name="server_client_id">PLASE THE CLIENT ID OF THE WEB CREDENTIAL FROM GOOGLE</string>
+</resources>
+
+//#### GoogleAuth.kt ####
+class GoogleAuth<T: Activity>(private val activity: T) {
+    private lateinit var googleSignInOptions: GoogleSignInOptions
+    private lateinit var googleSignInClient: GoogleSignInClient
+    val googleLoginCode = 1000
+
+    init {
+        setupGoogleAuth()
+    }
+
+    interface GoogleSignInCallback{
+        fun onGoogleSignInSuccess()
+    }
+
+    interface SilentSignInCallback{
+        fun googleSignInCallback(task: Task<GoogleSignInAccount>)//this will check if an account is already singed in
+    }
+
+    private fun setupGoogleAuth(){
+        // Configure sign-in to request the user's ID, email address, and basic
+        // profile. ID and basic profile are included in DEFAULT_SIGN_IN.
+        googleSignInOptions = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestIdToken(activity.getString(R.string.server_client_id))
+            .requestEmail()
+            .build()
+        // Build a GoogleSignInClient with the options specified by googleSignInOptions.
+        googleSignInClient = GoogleSignIn.getClient(activity, googleSignInOptions)
+    }
+
+    fun googleSilentSignIn(callback: SilentSignInCallback){
+        googleSignInClient.silentSignIn().addOnCompleteListener(activity){task->
+            callback.googleSignInCallback(task)
+        }
+    }
+
+    fun googleSignIn(){
+        val  signInIntent = googleSignInClient.signInIntent
+        activity.startActivityForResult(signInIntent, googleLoginCode)
+    }
+
+    fun signInResultHandler(data: Intent?, callback: GoogleSignInCallback){
+        val task = GoogleSignIn.getSignedInAccountFromIntent(data)
+        try {
+            task.getResult()
+            callback.onGoogleSignInSuccess()
+        }catch (e: ApiException){
+            Log.i("error dito",e.toString())
+            Toast.makeText(activity.applicationContext, "Something went wrong", Toast.LENGTH_LONG).show()
+        }
+    }
+
+    fun signOutGoogle(){
+        googleSignInClient.signOut().addOnCompleteListener {
+            Intent(activity, LoginActivity::class.java).also {
+                activity.finish()
+                activity.startActivity(it)
+            }
+        }
+    }
+
+    fun getAccountInfo(): GoogleSignInAccount {
+        val account = GoogleSignIn.getLastSignedInAccount(activity)!!
+        return account
+    }
+
+}
+
+//### CHECK IF LOGGED IN ###
+class YourActivity ..{
+    private lateinit var googleAuth:GoogleAuth<SplashActivity>
+
+	override fun onCreate(savedInstanceState: Bundle?) {
+		...
+		googleAuth = GoogleAuth(this)
+        googleAuth.googleSilentSignIn(this)
+	}
+	
+	override fun googleSignInCallback(task: Task<GoogleSignInAccount>) {
+        lifecycleScope.launch{
+            delay(1000L)//add delay for splash screen (optional)
+            if(task.isSuccessful) {
+				val idToken = googleAuth.getAccountInfo().idToken
+				Log.i("login splash", "idToken: $idToken")
+				// TODO(developer): send ID Token to server and validate
+			}
+            else //your function
+        }
+    }
+	
+}
+
+//### LOG IN MANUALLY ###

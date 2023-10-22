@@ -19,7 +19,6 @@
 </layer-list>
 
 //copy and paste your image.png in the drawable as thumb.png
-
 //change progress design
 1. create a new drawable resource file layer-list e.g bg_seekbar.xml
 //sample code
@@ -61,6 +60,26 @@
         android:layout_height="24dp"
         android:paddingTop="10dp"
         android:paddingBottom="10dp"
+		
+//### Activity.kt ###
+...
+onCreate(...){
+	...
+	seekBarParkMs.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener{
+                override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                    Log.i(tag, progress.toString())
+                }
+
+                override fun onStartTrackingTouch(p0: SeekBar?) {
+
+                }
+
+                override fun onStopTrackingTouch(p0: SeekBar?) {
+
+                }
+
+    })
+}
 		
 
 
