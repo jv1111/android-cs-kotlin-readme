@@ -14,3 +14,6 @@ buildTypes {
             ...
         }
     }
+//click build tab and clean and then make project
+
+//Access is through BuildConfig.API_KEY e.g (val API_KEY = BuildConfig.API_KEY)

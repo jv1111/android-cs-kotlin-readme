@@ -69,7 +69,7 @@ import retrofit2.Call
 import retrofit2.http.GET
 
 interface ApiService {
-    @GET("items")
+    @GET("/items")
     fun getItems(): Call<List<Item>>
 	
 	@Headers("Content-Type: application/json")
@@ -78,7 +78,7 @@ interface ApiService {
 	
 	//use this if you want to use Response
 	@Headers("Content-Type: application/json")
-    @POST("/")
+    @POST("/")//this is the url
     suspend fun postRequest(@Body data: UserInfo): Response<ResponseData>//ResponseData and UserInfo are the model created note what with suspend fun you need to use a coroutine or other background task handler take a look at retrofit post request file
 }
 
@@ -140,6 +140,7 @@ class ItemRepository {
 
     fun fetchItems(callback: ItemRepositoryCallback) {
         val call = apiService.getItems()
+		//Note to use retrofit2.Callback
         call.enqueue(object : Callback<List<Item>> {
             override fun onResponse(call: Call<List<Item>>, response: Response<List<Item>>) {
                 if (response.isSuccessful) {

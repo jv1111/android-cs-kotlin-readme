@@ -1,0 +1,14 @@
+//Your class
+//### T is the generic Activity, type : Activity ###
+class GoogleAuth<T: Activity>(private val activity: T){
+	...
+}
+
+//### usage ###
+class MainActivity : AppCompatActivity() {
+	private lateinit var googleAuth: GoogleAuth<MainActivity>
+	override fun onCreate(savedInstanceState: Bundle?) {
+		...
+		googleAuth = GoogleAuth(this)
+	}
+}

@@ -1,3 +1,9 @@
+//### manifest.xml ###
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+	...
+
 //create ConnectionListener.kt
 class ConnectionListener: ConnectivityManager.NetworkCallback() {
     private val tag = "myTag"
@@ -43,7 +49,7 @@ class MainActivity : AppCompatActivity() {
             .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
             .build()
         val connectivityManager = this.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val networkCallback = ConnectionListener(this)
+        val networkCallback = ConnectionListener()
         connectivityManager.registerNetworkCallback(request, networkCallback)
     }
 	...
