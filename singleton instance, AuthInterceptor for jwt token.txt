@@ -1,0 +1,44 @@
+package com.example.messengerapp.api
+
+import okhttp3.Interceptor
+import okhttp3.Response
+
+object AuthInterceptor : Interceptor {
+    var token: String? = null
+    override fun intercept(chain: Interceptor.Chain): Response {
+        var request = chain.request()
+
+        if (token != null) {
+            request = request.newBuilder()
+                .addHeader("Authorization", "Bearer $token")
+                .build()
+        }
+
+        return chain.proceed(request)
+
+    }
+}
+
+//### RetrofitInstance ###
+...
+    val client = OkHttpClient.Builder()
+        .addInterceptor(AuthInterceptor)
+        .build()
+		
+	val retrofit = Retrofit.Builder()
+		.baseUrl("https://your-api-url.com")
+		.addConverterFactory(GsonConverterFactory.create())
+		.client(client)
+		.build()
+....
+
+//### Repository ###
+class AuthRepository {
+    private val authService = RetrofitInstance.getRetrofitInstance().create(AuthService::class.java)
+
+    fun logout() {
+        AuthInterceptor.token = null
+    }
+
+    fun googleLogin...
+}

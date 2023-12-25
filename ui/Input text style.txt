@@ -11,3 +11,35 @@
                             android:layout_height="wrap_content"
                             android:textColor="@color/white" />
 </com.google.android.material.textfield.TextInputLayout>
+
+
+//SAMPLE FOR FORM
+ <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Username"
+            app:startIconTint="@color/white"
+            app:startIconDrawable="@drawable/baseline_supervised_user_circle_24">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etRegUsername"
+                android:imeOptions="actionNext"// to next
+				android:singleLine="true"// make it singleLine
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="48dp"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Password"
+            app:startIconTint="@color/white"
+            app:startIconDrawable="@drawable/baseline_password_24">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etRegPassword"
+                android:imeOptions="actionDone"
+				android:singleLine="true"// make it singleLine
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="48dp"/>
+        </com.google.android.material.textfield.TextInputLayout>

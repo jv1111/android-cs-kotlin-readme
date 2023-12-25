@@ -119,6 +119,26 @@ class ItemViewModel : ViewModel() {
 
         })
     }
+	
+	//with callback
+	fun fetchItems(callback: MyCallback) {
+        repository.fetchItems(object : ItemRepository.ItemRepositoryCallback {
+            override fun onItemsFetched(items: List<Item>) {
+                itemsLiveData.postValue(items)
+            }
+
+            override fun onItemFailed(str: String) {
+				callback.myCallbackFunction(str);
+            }
+
+        })
+    }
+	
+}
+
+//callback
+interface MyCallback{
+	fun myCallbackFunction(message: String);//then implement this to the view and use the callback
 }
 
 //Repository

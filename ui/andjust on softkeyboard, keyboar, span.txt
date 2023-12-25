@@ -1,0 +1,9 @@
+//manifest
+    <application
+        ...
+        <activity
+            android:name=".MainActivity"
+            android:windowSoftInputMode="adjustResize"
+            android:exported="false" />
+		...
+    </application>

@@ -1,0 +1,19 @@
+val jsonObject = JSONObject(jsonString)
+val errorMessage = jsonObject.optString("errorMessage")//errorMessage is the key e.g { errorMessage: "your error"}
+
+//get errorMessage from retrofit2
+override fun onResponse(call: Call<LocalUserModel>, response: Response<LocalUserModel>) {
+    if (response.isSuccessful) {
+        callback.onSuccess(response.body()!!)
+    } else {
+        val errorBodyStr = response.errorBody()?.string()
+        Log.i(tag, "Error body: $errorBodyStr")
+        if (response.code() == 409) {
+            val jsonObject = JSONObject(errorBodyStr)
+            val errorMessage = jsonObject.getString("errorMessage")
+            callback.onFail("Conflict error: 409. Message: $errorMessage")
+        } else {
+            callback.onFail("Something went wrong")
+        }
+    }
+}

@@ -1,0 +1,103 @@
+//xml
+<com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilRegUsername"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Username"
+            android:textColorHint="@color/hint"
+            app:startIconTint="@color/white"
+            app:startIconDrawable="@drawable/baseline_supervised_user_circle_24">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etRegUsername"
+                android:imeOptions="actionNext"
+                android:singleLine="true"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="48dp"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilRegPass"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Password"
+            android:textColorHint="@color/hint"
+            app:startIconTint="@color/white"
+            app:startIconDrawable="@drawable/baseline_password_24"
+			app:endIconTint="@color/white"
+			app:endIconMode="password_toggle">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etRegPassword"
+                android:inputType="textPassword"
+                android:imeOptions="actionDone"
+                android:singleLine="true"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="48dp"/>
+        </com.google.android.material.textfield.TextInputLayout>
+		
+		
+//FormValidation.kt
+package com.example.messengerapp.utils
+
+import com.google.android.material.textfield.TextInputLayout
+
+class FormValidator {
+
+    fun validateRegistrationForm(usernameInputLayout: TextInputLayout, passwordInputLayout: TextInputLayout): Boolean{
+        var isValid = true
+
+        val username = usernameInputLayout.editText?.text.toString()
+        val password = passwordInputLayout.editText?.text.toString()
+
+        if (username.length < 3) {
+            usernameInputLayout.error = "Username must have at least 3 characters"
+            isValid = false
+        } else {
+            usernameInputLayout.error = null // Clear the error
+        }
+
+        if (password.length < 8 || !password.matches(Regex("^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,}$"))) {
+            passwordInputLayout.error = "Password must be at least 8 characters and contain both letters and numbers"
+            isValid = false
+        } else {
+            passwordInputLayout.error = null // Clear the error
+        }
+
+        return isValid
+    }
+
+}
+
+//Activity.kt
+...
+submitButton.setOnClickListener {
+    if (formValidator.validate()) {
+        // Proceed with form submission
+    }
+}
+...
+
+//### Set error on text change ###
+//FormValidation.kt
+    fun validateUsername(usernameInputLayout: TextInputLayout, isSubmitted: Boolean){
+        val username = usernameInputLayout.editText?.text.toString()
+        if (username.length < 3 && isSubmitted) {
+            usernameInputLayout.error = "Username must have at least 3 characters"
+        } else {
+            usernameInputLayout.error = null // Clear the error
+        }
+    }
+
+//Activity.kt
+private var isSubmitted = false
+
+etRegUsername.doOnTextChanged { text, start, before, count ->
+    viewModel.username.postValue(text.toString())
+    formValidator.validateUsername(tilRegUsername, isSubmitted)
+}
+
+...
+btnSubmit.setOnClickListener{
+	isSubmitted = true
+}

@@ -1,7 +1,7 @@
 //dependency
 implementation("androidx.fragment:fragment-ktx:1.5.7")
 
-//create a view model
+//to create a view model
 package com.example.smartkeyv3.fragments.view_model
 
 import androidx.lifecycle.MutableLiveData
@@ -18,7 +18,7 @@ class SmartKeyViewModel : ViewModel() {
     //TODO do your api here
 }
 
-//create a view model factory
+//to create a view model factory
 package com.example.smartkeyv3.fragments.view_model
 
 import androidx.lifecycle.ViewModel
