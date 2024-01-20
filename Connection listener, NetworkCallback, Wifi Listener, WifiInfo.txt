@@ -11,13 +11,11 @@ class ConnectionListener: ConnectivityManager.NetworkCallback() {
     override fun onAvailable(network: Network) {
         super.onAvailable(network)
         Log.i(tag, "connection available")
-        SmartKeySystem.isWifiConnected.postValue(true)
     }
 
     override fun onLost(network: Network) {
         super.onLost(network)
         Log.i(tag, "connection lost")
-        SmartKeySystem.isWifiConnected.postValue(false)
     }
 
     override fun onCapabilitiesChanged(network: Network, networkCapabilities: NetworkCapabilities) {
@@ -53,3 +51,24 @@ class MainActivity : AppCompatActivity() {
         connectivityManager.registerNetworkCallback(request, networkCallback)
     }
 	...
+	
+	
+//CLEANER METHOD
+	//### MainActivity.kt ###
+	...
+	private lateinit var connectionListener: ConnectionListener
+	
+	override fun onCreate(savedInstanceState: Bundle?) {
+	...
+	connectionListener.registerConnectionListener(this)
+	}
+	
+	//### ConnectionListener.kt ###
+	private fun registerConnectionListener(context: Context){
+        val request = NetworkRequest.Builder()
+            .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
+            .build()
+        val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val networkCallback = ConnectionListener()
+        connectivityManager.registerNetworkCallback(request, networkCallback)
+    }

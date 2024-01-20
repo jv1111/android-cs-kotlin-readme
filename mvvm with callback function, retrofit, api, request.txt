@@ -6,6 +6,13 @@
     // Retrofit logging (optional, for debugging network requests)
     implementation("com.squareup.okhttp3:logging-interceptor:5.0.0-alpha.2")
 
+//### MANIFEST ###
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <uses-permission android:name="android.permission.INTERNET"/>
+
 
 //Create an api
 //Retrofit client

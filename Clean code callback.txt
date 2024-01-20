@@ -1,0 +1,28 @@
+//CREATE AN INTERFACE
+interface MyCallback{
+    fun yourCallbackFunction()
+}
+
+//IMPLEMENT THE INTERFACE
+class MainActivity : AppCompatActivity(), MyCallback {
+	...
+	override fun yourCallbackFunction() {
+        TODO("Not yet implemented")
+    }
+}
+
+//Use the Callback
+//### Pass the instance
+// ### MainActivity ###
+...
+	override fun onCreate(savedInstanceState: Bundle?) {
+		otherClass = OtherClass(this)
+	}
+...
+
+//### OtherClass ###
+class OtherClass (private val callback: MyCallback): ConnectivityManager.NetworkCallback() {
+	...
+	callback.yourCallbackFunction();
+	...
+}
