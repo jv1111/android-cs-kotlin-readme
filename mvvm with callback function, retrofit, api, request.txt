@@ -77,7 +77,7 @@ import retrofit2.http.GET
 
 interface ApiService {
     @GET("/items")
-    fun getItems(): Call<List<Item>>
+    fun getItems(): Call<List<Item>>//Item here is the datamodel and <List<Item>> is the response
 	
 	@Headers("Content-Type: application/json")
 	@POST("/post")

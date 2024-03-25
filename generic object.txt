@@ -12,3 +12,19 @@ class MainActivity : AppCompatActivity() {
 		googleAuth = GoogleAuth(this)
 	}
 }
+
+
+//### SAMPEL 2 ###
+class Animations<T : AppCompatActivity>(context: Context) {
+    private val activity: T = context as T
+    fun animateBtnTvPb(tv: TextView, pb: ProgressBar){
+        animateLoadingTvPb(tv,pb)
+        activity.lifecycleScope.launch {
+            delay(1000)
+            animateStopTvPb(tv,pb)
+        }
+    }
+
+//### Activity.kt ###
+val animationsForMain = Animations<MainActivity>(context)
+val animationsForOther = Animations<OtherActivity>(context)

@@ -1,0 +1,7 @@
+    override fun onBackPressed() {
+        super.onBackPressed()
+        Intent(this@SignalLightActivity, SelectionActivity::class.java).also{
+            startActivity(it)
+            finish()
+        }
+    
