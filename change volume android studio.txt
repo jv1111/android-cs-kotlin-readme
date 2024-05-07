@@ -1,0 +1,45 @@
+package com.example.volumecontroller
+
+import android.content.Context
+import android.media.AudioManager
+import androidx.appcompat.app.AppCompatActivity
+import android.os.Bundle
+import android.view.MotionEvent
+import android.widget.SeekBar
+
+class MainActivity : AppCompatActivity() {
+
+    private lateinit var audioManager: AudioManager
+    private lateinit var volumeSeekBar: SeekBar
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+
+        audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+        volumeSeekBar = findViewById(R.id.sbVol)
+
+        // Set max volume
+        val maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
+        volumeSeekBar.max = maxVolume
+
+        // Set current volume
+        val currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
+        volumeSeekBar.progress = currentVolume
+
+        volumeSeekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                val progress = volumeSeekBar.progress
+                audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, progress, 0)
+            }
+
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {
+            }
+
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {
+            }
+
+        })
+
+    }
+}

@@ -1,0 +1,33 @@
+//xml
+<SeekBar
+            android:id="@+id/sbBrightness"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:min="25"
+            android:max="255"
+            />
+			
+//kotlin
+sbBrightness.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener{
+                var sbVal = 0
+                val minVal = 10;
+                override fun onProgressChanged(p0: SeekBar?, p1: Int, p2: Boolean) {
+                    Log.i(TAG, p1.toString())
+                    sbVal = p1;
+                }
+
+                override fun onStartTrackingTouch(p0: SeekBar?) {
+                }
+
+                override fun onStopTrackingTouch(p0: SeekBar?) {
+                    if(sbVal<minVal){
+                        sbVal = minVal
+                        p0!!.progress = minVal
+                    }
+                    Log.i(TAG, "stopped at $sbVal")
+                    updateBrightness(sbVal)
+                }
+            })
+
+//APP COMPACT SEEKBAR
+

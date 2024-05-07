@@ -1,0 +1,13 @@
+private fun setSwitchFunction(){
+        binding.apply {
+            swLeft.setOnCheckedChangeListener { _, it ->
+                api.updateSwitches(SwitchModel(it, swRight.isChecked,swUnderglow.isChecked))
+            }
+            swRight.setOnCheckedChangeListener { _, it ->
+                api.updateSwitches(SwitchModel(swLeft.isChecked, it, swUnderglow.isChecked))
+            }
+            swUnderglow.setOnCheckedChangeListener { _, it ->
+                api.updateSwitches(SwitchModel(swLeft.isChecked, swRight.isChecked,it))
+            }
+        }
+    }

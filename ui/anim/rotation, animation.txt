@@ -1,0 +1,32 @@
+//Kotlin
+	private lateinit var rotatingImage: ImageView
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+		...
+        val rotateAnimation = AnimationUtils.loadAnimation(this, R.anim.rotate)
+        rotatingImage.startAnimation(rotateAnimation)
+	}
+	
+//res/anim/rotate.xml
+<?xml version="1.0" encoding="utf-8"?>
+<rotate
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:fromDegrees="0"
+    android:toDegrees="360"
+    android:pivotX="50%"
+    android:pivotY="50%"
+    android:duration="1000"
+    android:repeatCount="infinite"
+    android:interpolator="@android:anim/linear_interpolator"
+    />
+
+//layout.xml
+...
+    <ImageView
+        android:id="@+id/rotatingImage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/baseline_settings_24"
+        android:layout_centerInParent="true" />
+...

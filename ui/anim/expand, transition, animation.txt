@@ -1,0 +1,51 @@
+//layout.xml
+<androidx.cardview.widget.CardView
+        android:id="@+id/expandable"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:cardCornerRadius="20dp"
+        android:elevation="10dp"
+        android:padding="20dp">
+        <LinearLayout
+            android:id="@+id/layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:animateLayoutChanges="true"
+            android:orientation="vertical">
+            <TextView
+                android:id="@+id/tvDemo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="28sp"
+                android:text="Demo"
+                android:textStyle="bold"/>
+            <TextView
+                android:id="@+id/tvDetails"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="18sp"
+                android:text="@string/fake_text"
+                android:visibility="gone"/>
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
+	
+//Kotlin
+...
+	override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+        detailsText = findViewById(R.id.tvDetails)
+        layout = findViewById(R.id.layout)
+        expand = findViewById(R.id.expandable)
+
+
+        expandSample()
+    }
+	private fun expandSample(){
+        layout.layoutTransition.enableTransitionType(LayoutTransition.CHANGING)
+        expand.setOnClickListener{
+            val visibility = if (detailsText.visibility == View.GONE) View.VISIBLE else View.GONE
+            detailsText.visibility = visibility
+        }
+    }
+...
