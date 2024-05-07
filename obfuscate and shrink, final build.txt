@@ -16,7 +16,7 @@ android {
 ...
 
 //To not obfuscate classes and its member such as data classes use the Keep annotation
-@Keep//prevent obfuscation or use the proguard rules
+@Keep//prevent obfuscation or use the proguard rules (important to match the api)
 data class NewRresponse(
     val title: String
 )
@@ -38,7 +38,7 @@ data class NewRresponse(
 -keep,allowobfuscation,allowshrinking class kotlin.coroutines.Continuation
 
 
-//build your project or generate signed apk if you are gonna deploy it
+//build your project (for testing) or generate signed apk if you are gonna deploy it
 click build -> build bundles -> build bundles
 select build bundles if you are gonna upload it on playstore
 select build apk if you are just creating an installer

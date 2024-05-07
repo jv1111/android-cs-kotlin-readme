@@ -36,6 +36,7 @@ private fun incrementText(){
 	}
 }
 
+//Observer
 //MainActivity -> onCreate
 viewModel.currentNumber.observe{this, Observer{
 	textView.text = it.toString()

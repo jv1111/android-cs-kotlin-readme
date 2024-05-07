@@ -28,3 +28,16 @@ class Animations<T : AppCompatActivity>(context: Context) {
 //### Activity.kt ###
 val animationsForMain = Animations<MainActivity>(context)
 val animationsForOther = Animations<OtherActivity>(context)
+
+
+//### GENERIC FUNCTIONS
+//### SAMPLE WITH CALLBACK FUNCTIONS
+fun updateModeSL(cb: repoSLCBT<SLModesData>){//SLModesData is the data type
+...
+}
+
+//this is the callback interface
+ interface  repoSLCBT<T>{
+        fun onSuccess(data: T)
+        fun onFailed()
+    }
