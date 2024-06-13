@@ -58,3 +58,8 @@ x.value = newValue;//works on main thread
 class TestViewModel:ViewModel(){
 	val currentNumber = MutableLiveData(1)//1 is the default value or <Int>() = null
 }
+
+
+//WITH API DECLARATION (NEW)
+
+

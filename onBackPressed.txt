@@ -1,0 +1,73 @@
+//UPDATED VERSION
+
+import android.os.Bundle
+import androidx.activity.OnBackPressedCallback
+import androidx.appcompat.app.AppCompatActivity
+
+class MainActivity : AppCompatActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+
+        // This callback will be called when the back button is pressed
+        val callback = object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                // Handle the back button event
+                // For example, show a confirmation dialog or perform any specific action
+                // If you want to allow the back press to proceed, call `isEnabled = false` and `onBackPressedDispatcher.onBackPressed()`
+                //isEnabled = false
+                //onBackPressedDispatcher.onBackPressed()
+            }
+        }
+
+        // Add the callback to the dispatcher
+        onBackPressedDispatcher.addCallback(this, callback)
+    }
+}
+
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import androidx.activity.OnBackPressedCallback
+import androidx.fragment.app.Fragment
+
+class MyFragment : Fragment() {
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        return inflater.inflate(R.layout.fragment_my, container, false)
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        // This callback will be called when the back button is pressed
+        val callback = object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                // Handle the back button event
+                // For example, show a confirmation dialog or perform any specific action
+                // If you want to allow the back press to proceed, call `isEnabled = false` and `requireActivity().onBackPressedDispatcher.onBackPressed()`
+                //isEnabled = false
+                //requireActivity().onBackPressedDispatcher.onBackPressed()
+            }
+        }
+
+        // Add the callback to the dispatcher
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, callback)
+    }
+}
+
+//SAMPLE
+    private fun registerBackPressedFun(){
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if(isSettingsOpen){
+                    closeSettings()
+                }else{
+                    finish()
+                }
+            }
+        })
+    }

@@ -1,0 +1,277 @@
+//res/anim
+	#bg_animation.xml
+	<?xml version="1.0" encoding="utf-8"?>
+	<set xmlns:android="http://schemas.android.com/apk/res/android"
+		android:fillAfter="true">
+		<alpha
+			android:duration="300"
+			android:fromAlpha="0"
+			android:toAlpha="1"/>
+	</set>
+	
+	#bg_animation_out.xml
+	<?xml version="1.0" encoding="utf-8"?>
+	<set xmlns:android="http://schemas.android.com/apk/res/android"
+		android:fillAfter="true">
+		<alpha
+			android:duration="300"
+			android:fromAlpha="0"
+			android:toAlpha="1"/>
+	</set>
+	
+	#from_bottom_fab.xml
+	<?xml version="1.0" encoding="utf-8"?>
+	<set xmlns:android="http://schemas.android.com/apk/res/android"
+		android:fillAfter="true"
+		>
+		<translate
+			android:duration="300"
+			android:fromYDelta="100%"
+			android:toYDelta="0%"/>
+
+		<scale
+			android:pivotY="50%"
+			android:pivotX="50%"
+			android:toXScale="0.8"
+			android:toYScale="0.8"/><
+
+		<alpha
+			android:duration="300"
+			android:fromAlpha="0"
+			android:toAlpha="1"/>
+	</set>
+	
+	#to_bottom_fab.xml
+	<?xml version="1.0" encoding="utf-8"?>
+	<set xmlns:android="http://schemas.android.com/apk/res/android"
+		android:fillAfter="true"
+		>
+		<translate
+			android:duration="300"
+			android:fromXDelta="0%"
+			android:toYDelta="100%"/>
+
+		<scale
+			android:pivotY="50%"
+			android:pivotX="50%"
+			android:toXScale="0.8"
+			android:toYScale="0.8"
+			android:fromXScale="0.8"
+			android:fromYScale="0.8"/>
+
+		<alpha
+			android:duration="300"
+			android:fromAlpha="1"
+			android:toAlpha="0"/>
+	</set>
+	
+	#rotate.xml
+	<?xml version="1.0" encoding="utf-8"?>
+	<set xmlns:android="http://schemas.android.com/apk/res/android"
+		android:fillAfter="true"><!--  retain the animation  -->
+		<rotate
+			android:duration="300"
+			android:fromDegrees="0"
+			android:toDegrees="45"
+			android:pivotX="50%"
+			android:pivotY="50%"
+			android:interpolator="@android:anim/linear_interpolator"
+			/>
+	<!-- interpolator = for smooth animation
+			android:duration="300"
+			android:fromDegrees="0"
+			android:toDegrees="45"
+			android:pivotX="50%" = position
+			android:pivotY="50%" = position
+			android:interpolator="@android:anim/linear_interpolator" = smooth animation
+	-->
+	</set>
+	
+	#rotate_reverse.xml
+	<?xml version="1.0" encoding="utf-8"?>
+	<set xmlns:android="http://schemas.android.com/apk/res/android"
+		android:fillAfter="true">
+		<rotate
+			android:duration="300"
+			android:fromDegrees="45"
+			android:toDegrees="0"
+			android:pivotX="50%"
+			android:pivotY="50%"
+			android:interpolator="@android:anim/linear_interpolator"
+			/>
+	</set>
+	
+	
+	
+
+//KOTLIN
+package com.example.recyclerview
+
+import android.graphics.Rect
+import androidx.appcompat.app.AppCompatActivity
+import android.os.Bundle
+import android.view.MotionEvent
+import android.view.View
+import android.view.animation.Animation
+import android.view.animation.AnimationUtils
+import com.example.recyclerview.databinding.ActivityMainBinding
+
+class MainActivity : AppCompatActivity() {
+    private lateinit var binding: ActivityMainBinding
+    private var isExpanded = false
+
+    private val fromBottomFabAnim: Animation by lazy {
+        AnimationUtils.loadAnimation(this, R.anim.from_bottom_fab)
+    }
+    private val toBottomFabAnim: Animation by lazy {
+        AnimationUtils.loadAnimation(this, R.anim.to_bottom_fab)
+    }
+    private val rotateAnim: Animation by lazy {
+        AnimationUtils.loadAnimation(this, R.anim.rotate)
+    }
+    private val rotateReverseAnim: Animation by lazy {
+        AnimationUtils.loadAnimation(this, R.anim.rotate_reverse)
+    }
+    private val bgFadeIn: Animation by lazy {
+        AnimationUtils.loadAnimation(this, R.anim.bg_animation)
+    }
+    private val bgFadeOut: Animation by lazy {
+        AnimationUtils.loadAnimation(this, R.anim.bg_animation_out)
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
+        binding.mainFabBtn.setOnClickListener{
+            if(isExpanded){
+                shrinkFab();
+            }else{
+                expandFab();
+            }
+        }
+    }
+
+    private fun shrinkFab(){
+        binding.apply {
+            transparentBg.startAnimation(bgFadeOut)
+            mainFabBtn.startAnimation(rotateReverseAnim)
+            first.startAnimation(toBottomFabAnim)
+            second.startAnimation(toBottomFabAnim)
+            transparentBg.visibility = View.GONE
+        }
+        isExpanded = !isExpanded
+    }
+    private fun expandFab(){
+        binding.apply {
+            transparentBg.startAnimation(bgFadeIn)
+            mainFabBtn.startAnimation(rotateAnim)
+            first.startAnimation(fromBottomFabAnim)
+            second.startAnimation(fromBottomFabAnim)
+            first.visibility = View.VISIBLE
+            second.visibility = View.VISIBLE
+            transparentBg.visibility = View.VISIBLE
+        }
+        isExpanded = !isExpanded
+    }
+
+    //when touched outside
+    override fun dispatchTouchEvent(ev: MotionEvent?): Boolean {
+        if(ev?.action == MotionEvent.ACTION_DOWN){
+            if(isExpanded){
+                val outRect = Rect()
+                binding.fabBox.getGlobalVisibleRect(outRect)
+                if(!outRect.contains(ev.rawX.toInt(), ev.rawY.toInt())){
+                    shrinkFab()
+                }
+            }
+        }
+        return super.dispatchTouchEvent(ev)
+    }
+}
+
+//layout.xml
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+<!--  bias is for aligning the View, e.g center, etc...  -->
+    <View
+        android:id="@+id/transparentBg"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="#66000000"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.5"/>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/fabBox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="32dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:layout_editor_absoluteX="1dp" >
+
+        <TextView
+            android:id="@+id/gallaryTv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="second"
+            android:background="@drawable/fab_txt_bg"
+            android:paddingHorizontal="32dp"
+            android:paddingVertical="8dp"
+            android:visibility="gone"
+            app:layout_constraintEnd_toStartOf="@id/second"
+            app:layout_constraintTop_toTopOf="@id/second"
+            app:layout_constraintBottom_toBottomOf="@id/second"/>
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/second"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:srcCompat="@drawable/baseline_add_24"
+            android:layout_marginEnd="12dp"
+            android:layout_marginBottom="12dp"
+            android:visibility="gone"
+            app:layout_constraintBottom_toTopOf="@id/first"
+            app:layout_constraintEnd_toEndOf="parent"/>
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/first"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:srcCompat="@drawable/baseline_add_24"
+            android:layout_marginEnd="12dp"
+            android:layout_marginBottom="12dp"
+            android:visibility="gone"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/mainFabBtn"/>
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/mainFabBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="12dp"
+            android:layout_marginBottom="12dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:srcCompat="@drawable/baseline_add_24"
+            tools:ignore="SpeakableTextPresentCheck" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

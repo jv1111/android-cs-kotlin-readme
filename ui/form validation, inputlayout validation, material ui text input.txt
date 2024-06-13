@@ -101,3 +101,8 @@ etRegUsername.doOnTextChanged { text, start, before, count ->
 btnSubmit.setOnClickListener{
 	isSubmitted = true
 }
+
+//TEXT CHANGE LISTENER
+            et.addTextChangedListener {
+                Log.i("myTag adapter text change", etQuestion.text.toString())
+            }

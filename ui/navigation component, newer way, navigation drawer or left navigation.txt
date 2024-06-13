@@ -4,9 +4,9 @@
     implementation "androidx.navigation:navigation-ui-ktx:$nav_version"
 	
 1. create a new navigation
-click Resource Manager
-click navigation tab
-click the add button
+click on Resource Manager
+click on navigation tab
+click on the add button
 choose add navigation resource file
 
 2. go to nav.xml you created
@@ -63,7 +63,7 @@ class FirstFragment : Fragment() {
         binding = FragmentFirstBinding.inflate(inflater, container, false)
         binding.tv1.setOnClickListener{
             //go to the second activity(this action is auto generated when you connect the fragment in the nav.xml)
-            it.findNavController().navigate(R.id.action_firstFragment_to_secondFragment)
+            it.findNavController().navigate(R.id.action_firstFragment_to_secondFragment)//R.id.action_firstFragment_to_secondFragment is the id of the action in nav.xml
         }
         return binding.root
     }
@@ -77,6 +77,11 @@ class FirstFragment : Fragment() {
             app:argType="integer" />
 			
 6. add thi dependency to the top level gradle
+To add Safe Args to your project, include the following classpath in your top level build.gradle file:
+plugins {
+    id("androidx.navigation.safeargs")
+	...
+}
 buildscript {
     repositories {
         google()

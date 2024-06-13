@@ -1,0 +1,5 @@
+object GlobalRepo {
+    private val repoFetchData: RepoFetch by lazy { RepoFetch() }
+    
+    fun getRepoFetchData(): RepoFetch = repoFetchData
+}

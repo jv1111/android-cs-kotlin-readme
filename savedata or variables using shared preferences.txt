@@ -140,3 +140,58 @@ class SharedPreferencesHelper private constructor(context: Context) {
     }
 
 }
+
+//SIMPLE CLASS
+//SAVE A LIST AND MODEL
+//IMPLEMENT implementation 'com.google.code.gson:gson:2.8.8'
+package com.example.revbotoffline.utils
+
+import android.content.Context
+import android.content.SharedPreferences
+import com.example.revbotoffline.recycler.model.ModelRecCreateQuiz
+import com.example.revbotoffline.room.model.ModelSubject
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
+
+class SharedPreference(context: Context, sfName: String, mode: Int) {
+    private val sf: SharedPreferences
+    private val sfEditor: SharedPreferences.Editor
+    private val gson = Gson()
+    init {
+        sf = context.getSharedPreferences(sfName, mode)
+        sfEditor = sf.edit()
+    }
+
+    fun saveStringList(name: String, list: List<String>) {
+        val json = gson.toJson(list)
+        sfEditor.putString(name, json).apply()
+    }
+
+    fun getStringList(name: String): List<String> {
+        val json = sf.getString(name, null) ?: return emptyList()
+        val type = object : TypeToken<List<String>>() {}.type
+        return gson.fromJson(json, type)
+    }
+
+    fun saveModelList(name: String, list: List<ModelSubject>){
+        val json = gson.toJson(list)
+        sfEditor.putString(name, json).apply()
+    }
+    fun getModelList(name: String): List<ModelSubject> {
+        val json = sf.getString(name, null) ?: return emptyList()
+        val type = object : TypeToken<List<ModelSubject>>() {}.type
+        return gson.fromJson(json, type)
+    }
+	
+	//generic setup
+	fun <T> saveModelList(name: String, list: List<T>) {
+        val json = gson.toJson(list)
+        sfEditor.putString(name, json).apply()
+    }
+
+    inline fun <reified T> getModelList(name: String): List<T> {
+        val json = sf.getString(name, null) ?: return emptyList()
+        val type = object : TypeToken<List<T>>() {}.type
+        return gson.fromJson(json, type)
+    }
+}

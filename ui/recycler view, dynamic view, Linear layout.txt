@@ -1,11 +1,18 @@
 dependency
     implementation "androidx.recyclerview:recyclerview:1.3.1"
 
-1. create a recyclerview component in your  xml file e.g activity_main.xml
+1. create a recyclerview component in your xml file e.g activity_main.xml
 //sample
 	 <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvTodos"
         android:layout_width="match_parent"
+        android:layout_height="0dp"/>
+		
+//scrollable
+	 <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvTodos"
+        android:layout_width="match_parent"
+		android:scrollbars="vertical"
         android:layout_height="0dp"/>
 		
 2. create a new layout file for the item e.g item_todo.xml (this will what the item will look like)
@@ -168,3 +175,113 @@ class TodoAdapter(
 		}
     }
 	}
+	
+//NOTIFY CHANGES/ UPDATE CHANGES/ MANIPULATE ELEMENTS
+private var selectedPosition : Int = RecyclerView.NO_POSITION
+
+...
+override fun onBindViewHolder(holder: ModesViewHolder, position: Int) {
+        holder.itemView.apply {
+            val title = findViewById<TextView>(R.id.tvslM)
+            val clickableMode = findViewById<RelativeLayout>(R.id.btnMode)
+            title.text = modes[position].title
+            Log.i(tag, "selectedPosition $selectedPosition")
+            if(position == selectedPosition){
+                clickableMode.setBackgroundResource(R.drawable.selection_box_active)
+                title.setTextColor(context.getColor(R.color.active_color))
+            }else{
+                clickableMode.setBackgroundResource(R.drawable.selection_box)
+                title.setTextColor(context.getColor(R.color.white))
+            }
+
+            clickableMode.setOnClickListener {
+                selectedPosition = holder.adapterPosition
+                //notifyItemChanged(selectedPosition) //refresh by position
+                notifyDataSetChanged() //refresh all
+            }
+        }
+    }
+
+//setup with viewModel
+class ModesAdapter(private val viewModel: ModesViewModel) : RecyclerView.Adapter<ModesAdapter.ModesViewHolder>() {
+
+    private var modes: List<Mode> = listOf()
+
+    init {
+        viewModel.selectedPosition.observeForever {
+            notifyDataSetChanged()
+        }
+
+        viewModel.modes.observeForever {
+            modes = it
+            notifyDataSetChanged()
+        }
+    }
+
+//callback on click
+{
+	class ModesAdapter(private val cb: CbInterface...){
+	}
+	//IMPLEMENT THE CALLBACK IN THE ACTIVITY
+	//TO CALL THE CALLBACK
+	cb.myCallback()
+}
+
+//EFFICIENT BINDING
+//ADAPTER
+package com.example.revbotoffline.recycler.adapter
+
+import android.text.TextWatcher
+import android.util.Log
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.EditText
+import androidx.core.widget.addTextChangedListener
+import androidx.recyclerview.widget.RecyclerView
+import com.example.revbotoffline.R
+import com.example.revbotoffline.recycler.model.ModelRecCreateQuiz
+
+class AdapterRecCreateQuiz(
+    var item: MutableList<ModelRecCreateQuiz>
+): RecyclerView.Adapter<AdapterRecCreateQuiz.ViewHolder>() {
+    inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView){
+        private val etQuestion: EditText = itemView.findViewById(R.id.etQuestion)
+        private val etAnswer: EditText = itemView.findViewById(R.id.etAnswer)
+        private var questionTextWatcher: TextWatcher? = null
+
+        fun bind(item: ModelRecCreateQuiz, position: Int) {
+            // Remove previous TextWatcher if exists
+            questionTextWatcher?.let {
+                etQuestion.removeTextChangedListener(it)
+            }
+
+            // Set the text from the data model
+            etQuestion.setText(item.question)
+            etAnswer.setText(item.answer)
+
+            // Create a new TextWatcher
+            questionTextWatcher = etQuestion.addTextChangedListener { text ->
+                Log.i("myTag pos: ", position.toString())
+                Log.i("MyTag val: ", text.toString())
+                item.question = text.toString()
+            }
+        }
+    }
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+        val view = LayoutInflater.from(parent.context).inflate(R.layout.rec_item_create_quiz, parent, false)
+        return ViewHolder(view)
+    }
+
+    override fun getItemCount(): Int {
+        return item.size
+    }
+
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+        holder.bind(item[position], position)
+    }
+}
+
+//AUTO SCROLL 
+rvCreatQuiz.scrollToPosition(viewModel.quizList.size - 1)

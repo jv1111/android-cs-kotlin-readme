@@ -1,0 +1,4 @@
+// Generate a random index within the bounds of the list
+val randomIndex = Random.nextInt(quizSession.size)
+// Access the ModelQuizSession object at the random index
+val randomQuizSession = quizSession[randomIndex]

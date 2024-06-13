@@ -1,0 +1,383 @@
+#USE THIS TO APPY KAPT NAD KSP
+apply plugin: 'kotlin-kapt' // For kapt
+apply plugin: 'com.google.devtools.ksp' // For ksp
+#OR
+   id("com.google.dagger.hilt.android")
+   id("kotlin-kapt")
+
+#DEPENDENCY
+dependencies {
+    val room_version = "2.6.1"
+
+    implementation("androidx.room:room-runtime:$room_version")
+    annotationProcessor("androidx.room:room-compiler:$room_version")
+
+    // To use Kotlin annotation processing tool (kapt)
+    kapt("androidx.room:room-compiler:$room_version")
+    // To use Kotlin Symbol Processing (KSP)
+    ksp("androidx.room:room-compiler:$room_version")
+
+    // optional - Kotlin Extensions and Coroutines support for Room
+    implementation("androidx.room:room-ktx:$room_version")
+
+    // optional - RxJava2 support for Room
+    implementation("androidx.room:room-rxjava2:$room_version")
+
+    // optional - RxJava3 support for Room
+    implementation("androidx.room:room-rxjava3:$room_version")
+
+    // optional - Guava support for Room, including Optional and ListenableFuture
+    implementation("androidx.room:room-guava:$room_version")
+
+    // optional - Test helpers
+    testImplementation("androidx.room:room-testing:$room_version")
+
+    // optional - Paging 3 Integration
+    implementation("androidx.room:room-paging:$room_version")
+}
+
+#MODEL
+package com.example.revbotoffline.room.model
+
+import androidx.room.ColumnInfo
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+
+@Entity
+data class User(
+    @PrimaryKey(autoGenerate = true) val id: Int = 0, // Auto-generated primary key
+    @ColumnInfo(name = "first_name") val firstName: String?,
+    @ColumnInfo(name = "last_name") val lastName: String?
+)
+
+#APP DATABASE
+package com.example.revbotoffline.room.database
+
+import androidx.room.Database
+import androidx.room.RoomDatabase
+import com.example.revbotoffline.room.dao.UserDao
+import com.example.revbotoffline.room.model.User
+
+@Database(entities = [User::class], version = 1)
+abstract class AppDatabase : RoomDatabase() {
+    abstract fun userDao(): UserDao
+}
+
+#DAO
+package com.example.revbotoffline.room.dao
+
+import androidx.room.Dao
+import androidx.room.Delete
+import androidx.room.Insert
+import androidx.room.Query
+import com.example.revbotoffline.room.model.User
+
+@Dao
+interface UserDao {
+    @Query("SELECT * FROM user")
+    fun getAll(): List<User>
+
+    @Query("SELECT * FROM user WHERE id IN (:userIds)")
+    fun loadAllByIds(userIds: IntArray): List<User>
+
+    @Query("SELECT * FROM user WHERE first_name LIKE :first AND " +
+            "last_name LIKE :last LIMIT 1")
+    fun findByName(first: String, last: String): User
+
+    @Insert
+    fun insertAll(vararg users: User)
+	//    val user1 = User(id = 1, firstName = "John", lastName = "Doe")
+	//    val user2 = User(id = 2, firstName = "Jane", lastName = "Smith")
+	//
+	//    userDao.insertAll(user1, user2)
+
+    @Delete
+    fun delete(user: User)
+}
+
+#Room
+package com.example.revbotoffline.room
+
+import android.content.Context
+import androidx.room.Room
+import com.example.revbotoffline.room.database.AppDatabase
+
+object RoomInstance {
+    fun getInstance(context: Context): AppDatabase {
+        return Room.databaseBuilder(
+            context,
+            AppDatabase::class.java,
+            "database-name"
+        ).build()
+    }
+}
+
+#SAMPLE USAGE
+lifecycleScope.launch(Dispatchers.IO) {
+            val db = Room.databaseBuilder(
+                this@MainActivity,
+                AppDatabase::class.java,
+                "database-name"
+            ).build()
+            var userDao = db.userDao()
+            val users: List<User> = userDao.getAll()
+            Log.i(tag, users.toString())
+        }
+		
+#CLEANER APPROACH
+#DEPENDENCY FOR VIEWMODEL
+    dependencies {
+        def lifecycle_version = "2.8.1"
+        def arch_version = "2.2.0"
+
+        // ViewModel
+        implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version"
+        // ViewModel utilities for Compose
+        implementation "androidx.lifecycle:lifecycle-viewmodel-compose:$lifecycle_version"
+        // LiveData
+        implementation "androidx.lifecycle:lifecycle-livedata-ktx:$lifecycle_version"
+        // Lifecycles only (without ViewModel or LiveData)
+        implementation "androidx.lifecycle:lifecycle-runtime-ktx:$lifecycle_version"
+        // Lifecycle utilities for Compose
+        implementation "androidx.lifecycle:lifecycle-runtime-compose:$lifecycle_version"
+
+        // Saved state module for ViewModel
+        implementation "androidx.lifecycle:lifecycle-viewmodel-savedstate:$lifecycle_version"
+
+        // Annotation processor
+        kapt "androidx.lifecycle:lifecycle-compiler:$lifecycle_version"
+        // alternately - if using Java8, use the following instead of lifecycle-compiler
+        implementation "androidx.lifecycle:lifecycle-common-java8:$lifecycle_version"
+
+        // optional - helpers for implementing LifecycleOwner in a Service
+        implementation "androidx.lifecycle:lifecycle-service:$lifecycle_version"
+
+        // optional - ProcessLifecycleOwner provides a lifecycle for the whole application process
+        implementation "androidx.lifecycle:lifecycle-process:$lifecycle_version"
+
+        // optional - ReactiveStreams support for LiveData
+        implementation "androidx.lifecycle:lifecycle-reactivestreams-ktx:$lifecycle_version"
+
+        // optional - Test helpers for LiveData
+        testImplementation "androidx.arch.core:core-testing:$arch_version"
+
+        // optional - Test helpers for Lifecycle runtime
+        testImplementation "androidx.lifecycle:lifecycle-runtime-testing:$lifecycle_version"
+    }
+	
+	
+##MODEL
+package com.example.revbotoffline.room.model
+
+import androidx.room.ColumnInfo
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+
+@Entity(tableName = "user_table")
+data class User(
+    @PrimaryKey(autoGenerate = true)
+    val id: Int,
+
+    val firstName: String,
+
+    val lastName: String,
+
+    val age: Int
+)
+
+##DAO
+package com.example.revbotoffline.room.dao
+
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
+import com.example.revbotoffline.room.model.User
+
+@Dao
+interface UserDao {
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun addUser(user: User)
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun addMany(vararg users: User)
+
+    @Query("SELECT * FROM user_table ORDER BY id ASC")
+    fun readAllData(): List<User>
+
+    @Query("DELETE FROM user_table WHERE id = :userId")//userId is the userId parameter
+    suspend fun deleteUserById(userId: Int)
+
+    @Query("DELETE FROM user_table")
+    suspend fun deleteAll()
+}
+
+##REPOSITORY
+package com.example.revbotoffline.repository
+
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import com.example.revbotoffline.room.dao.UserDao
+import com.example.revbotoffline.room.model.User
+
+class UserRepository(private val userDao: UserDao) {
+    suspend fun addUser(user: User){
+        userDao.addUser(user)
+    }
+
+    suspend fun readAllData(): List<User>{
+        return userDao.readAllData()
+    }
+
+    suspend fun deleteAll(){
+        userDao.deleteAll()
+    }
+
+}
+
+##DATABASE
+package com.example.revbotoffline.room.database
+
+import android.content.Context
+import androidx.room.Database
+import androidx.room.Room
+import androidx.room.RoomDatabase
+import com.example.revbotoffline.room.dao.UserDao
+import com.example.revbotoffline.room.model.User
+
+@Database(entities = [User::class], version = 1)
+abstract class AppDatabase : RoomDatabase() {
+    abstract fun userDao(): UserDao
+    companion object {
+        @Volatile
+        private var INSTANCE: AppDatabase? = null
+
+        fun getDatabase(context: Context) : AppDatabase{
+            val tempInstance = INSTANCE
+            if(tempInstance != null){
+                return tempInstance
+            }
+            synchronized(this){
+                var tableName = "user_database"
+                val instance = Room.databaseBuilder(
+                    context.applicationContext,
+                    AppDatabase::class.java,
+                    tableName
+                ).build()
+                INSTANCE = instance
+                return instance
+            }
+        }
+    }
+}
+
+##VIEWMODEL
+package com.example.revbotoffline.view_model
+
+import android.app.Application
+import android.util.Log
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.viewModelScope
+import com.example.revbotoffline.MainActivity
+import com.example.revbotoffline.repository.UserRepository
+import com.example.revbotoffline.room.database.AppDatabase
+import com.example.revbotoffline.room.model.User
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+
+class UserViewModel(application: Application) : AndroidViewModel(application) {
+    val allData: MutableLiveData<List<User>> by lazy {
+        MutableLiveData<List<User>>()
+    }
+    private val repository: UserRepository
+
+    init {
+        val userDao = AppDatabase.getDatabase(application).userDao()
+        repository = UserRepository(userDao)
+        readUsers()
+    }
+
+    fun addUser(user: User){
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.addUser(user)
+            readUsers()
+        }
+    }
+
+    fun readUsers(){
+        viewModelScope.launch(Dispatchers.IO) {
+            allData.postValue(repository.readAllData())
+        }
+    }
+
+    fun deleteAll(){
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.deleteAll()
+            allData.postValue(repository.readAllData())
+        }
+    }
+}
+
+##MainActivity
+package com.example.revbotoffline
+
+import androidx.appcompat.app.AppCompatActivity
+import android.os.Bundle
+import android.util.Log
+import android.view.View
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
+import com.example.revbotoffline.room.model.User
+import com.example.revbotoffline.view_model.UserViewModel
+
+class MainActivity : AppCompatActivity() {
+    companion object{
+        val tag = "myTag"
+    }
+
+    private lateinit var viewModel: UserViewModel
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+        viewModel = ViewModelProvider(this).get(UserViewModel::class.java)
+		//to setup view model in a fragment
+		//viewModel = ViewModelProvider(requireActivity()).get(ViewModelCreateQuiz::class.java)
+        viewModel.allData.observe(this, Observer {
+            Log.i(tag, "this is the data ${it.toString()}")
+        })
+    }
+
+    fun addUser(view: View) {
+        viewModel.addUser(User(
+            33,//Write 0 to autogenerate the id
+            "Dododod",
+            "xxss",
+            2843
+        ))
+    }
+	
+	fun deleteAll(view: View) {
+        viewModel.deleteAll()
+    }
+}
+
+//MODEL WITH FOREIGN KEY SAMPLE
+@Entity(
+    tableName = "quiz_name",
+    foreignKeys = [
+        ForeignKey(
+            entity = ModelSubject::class,
+            parentColumns = ["id"],
+            childColumns = ["subjectId"],
+            onDelete = ForeignKey.CASCADE
+        )
+    ]
+)
+
+//USING by viewModels 
+private val viewModel: ViewModelQuiz by viewModels()
+//To automatically clean the viewmodel and reenitialized when needed

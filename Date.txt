@@ -1,0 +1,80 @@
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+import java.util.*
+
+@Entity(tableName = "your_table_name")
+data class YourEntity(
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val name: String,
+    val createdAt: Date // Using java.util.Date for simplicity, consider using java.time.* if targeting API 26+
+)
+
+
+import androidx.room.TypeConverter
+import java.util.*
+
+object Converters {
+    @TypeConverter
+    @JvmStatic
+    fun fromDate(date: Date?): Long? {
+        return date?.time
+    }
+
+    @TypeConverter
+    @JvmStatic
+    fun toDate(millisSinceEpoch: Long?): Date? {
+        return millisSinceEpoch?.let { Date(it) }
+    }
+}
+
+
+import androidx.room.Database
+import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
+
+@Database(entities = [YourEntity::class], version = 1)
+@TypeConverters(Converters::class)
+abstract class YourDatabase : RoomDatabase() {
+    abstract fun yourDao(): YourDao
+}
+
+
+import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.Query
+
+@Dao
+interface YourDao {
+    @Insert
+    suspend fun insert(entity: YourEntity)
+
+    @Query("SELECT * FROM your_table_name")
+    suspend fun getAllEntities(): List<YourEntity>
+}
+
+class YourViewModel(private val yourDao: YourDao) : ViewModel() {
+    suspend fun insert(entity: YourEntity) {
+        yourDao.insert(entity)
+    }
+
+    suspend fun getAllEntities(): List<YourEntity> {
+        return yourDao.getAllEntities()
+    }
+}
+
+//STRING TYPE 
+val date = SimpleDateFormat("dd/M/yyyy hh:mm:ss")
+val currentDate = date.format(Date())
+
+
+//Date data
+ModelQuizSession(
+                        0,
+                        items.subjectId,
+                        items.quizId,
+                        items.question,
+                        items.answer,
+                        false,
+                        false,
+                        Date()
+                    )
