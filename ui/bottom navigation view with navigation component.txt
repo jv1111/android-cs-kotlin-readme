@@ -27,7 +27,7 @@
 5. Create vector icons in the drawable
 
 6. Create a new resource file for the menu and set the id of the item similar to the destination fragment's id and also the icons
-//sample code
+//res/menu/menu.xml
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 

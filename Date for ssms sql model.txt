@@ -1,0 +1,7 @@
+//DATA TYPE
+val DATE_CREATED:  LocalDate,
+
+//Date now
+val dateToday = LocalDate.now()
+
+//Specific = LocalDate.of(year,day,month)

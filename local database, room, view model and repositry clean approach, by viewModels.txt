@@ -379,5 +379,6 @@ class MainActivity : AppCompatActivity() {
 )
 
 //USING by viewModels 
+import androidx.fragment.app.viewModels
 private val viewModel: ViewModelQuiz by viewModels()
 //To automatically clean the viewmodel and reenitialized when needed

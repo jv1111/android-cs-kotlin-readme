@@ -1,0 +1,8 @@
+//RELATIVE LAYOUT
+holder.itemView.apply {
+            val tvMessage = findViewById<TextView>(R.id.tvMessage)
+            val layoutParams = tvMessage.layoutParams as RelativeLayout.LayoutParams
+            layoutParams.addRule(RelativeLayout.ALIGN_RIGHT, RelativeLayout.TRUE)
+            tvMessage.text = listOfMessages[position].messageText
+            tvMessage.layoutParams = layoutParams
+        }

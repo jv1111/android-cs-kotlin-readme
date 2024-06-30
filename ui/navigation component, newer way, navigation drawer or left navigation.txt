@@ -13,7 +13,7 @@ choose add navigation resource file
 click add new destination icon and create blank fragments
 after creating blank fragments connect the it to create an action (click and drag)
 
-3. go to the activity_main.xml and add the nav_host component and select the nav you just created
+3. go to the activity_main.xml and add the nav_host component and select the nav you have just created
 //sample code
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"

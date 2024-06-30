@@ -1,0 +1,72 @@
+//MANIFEST
+...
+    <uses-permission android:name="android.permission.INTERNET"/>
+...
+
+//DEPENDENCY
+    implementation("io.socket:socket.io-client:2.0.0") {
+        exclude(group = "org.json", module = "json")
+    }
+
+//MainActivity
+
+package com.example.socketio
+
+import android.os.Bundle
+import android.util.Log
+import androidx.appcompat.app.AppCompatActivity
+import com.example.socketio.databinding.ActivityMainBinding
+import io.socket.client.IO
+import io.socket.client.Socket
+import io.socket.emitter.Emitter
+import org.json.JSONException
+
+class MainActivity : AppCompatActivity() {
+    private lateinit var mSocket : Socket
+    private lateinit var binding: ActivityMainBinding
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        mSocket = IO.socket("http://192.168.8.107:3001")
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+        mSocket.connect()
+        joinRoom("1")
+        var messageEventName = "receive_message"
+        mSocket.on(messageEventName, onNewMessage)
+        binding.apply {
+            btnSend.setOnClickListener {
+                send()
+            }
+        }
+    }
+
+    private fun send(){
+        val message = "myMessage"
+        val eventName = "send_message"
+        mSocket.emit(eventName, message)
+    }
+
+    private fun joinRoom(roomName: String) {
+        val eventName = "join_room"
+        mSocket.emit(eventName, roomName)
+    }
+
+    private val onNewMessage: Emitter.Listener = Emitter.Listener { args ->
+        this?.runOnUiThread {
+            //val data = args[0] as JSONObject // if the data is an array
+            val data = args[0] as String
+            try {
+                Log.i("myTag received message: ", data)
+            } catch (e: JSONException) {
+                return@runOnUiThread
+            }
+        }
+    }
+	
+	private fun disconnect(){
+		mSocket.disconnect()
+	}
+
+    //TODO TEST SENT BY ROOM
+}

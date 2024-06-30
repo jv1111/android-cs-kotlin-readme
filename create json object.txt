@@ -1,0 +1,5 @@
+        val data = JSONObject()
+        data.put("message", message)
+        data.put("room", room)
+		
+		val message = data.getString("message");//.getInt(name) etc...
