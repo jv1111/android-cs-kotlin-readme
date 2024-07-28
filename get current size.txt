@@ -1,0 +1,16 @@
+val imgMaximize = findViewById<ImageView>(R.id.imgMaximize)
+val layoutMaximized = findViewById<LinearLayout>(R.id.layoutMaximized)
+
+imgMaximize.viewTreeObserver.addOnGlobalLayoutListener(object : ViewTreeObserver.OnGlobalLayoutListener {
+    override fun onGlobalLayout() {
+        // Remove the listener to avoid multiple calls
+        imgMaximize.viewTreeObserver.removeOnGlobalLayoutListener(this)
+        
+        // Now you can get the height of the view
+        val height = imgMaximize.height
+        val width = imgMaximize.width
+
+        // Do something with the height
+        Log.d("ViewDimensions", "Height: $height, Width: $width")
+    }
+})

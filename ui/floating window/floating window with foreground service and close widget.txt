@@ -308,6 +308,219 @@ class FloatingWindowHelper(private val context: Context) {
     }
 }
 
+//FLOATING WINDOW HELPER WITH MAXIMIZE AND MINIMIZE
+package com.example.flasherrelay.utils
+
+import android.annotation.SuppressLint
+import android.app.Service
+import android.content.Context
+import android.graphics.PixelFormat
+import android.os.Build
+import android.util.Log
+import android.view.Gravity
+import android.view.LayoutInflater
+import android.view.MotionEvent
+import android.view.View
+import android.view.WindowManager
+import android.view.WindowManager.LayoutParams
+import android.widget.ImageView
+import android.widget.LinearLayout
+import android.widget.RelativeLayout
+import android.widget.TextView
+import com.example.flasherrelay.R
+import kotlin.properties.Delegates
+
+class FloatingWindowHelper(private val context: Context) {
+    //---------
+    private var LAYOUT_FLAG: Int? = null
+    private lateinit var mFloatingView: View
+    private lateinit var windowManager: WindowManager
+    private lateinit var imageClose: ImageView
+    private var isMoved = false
+    private val movementThreshold  = 10
+    //-------
+    private var isMaximized = false
+    private lateinit var floatingViewLayout: RelativeLayout
+    private lateinit var imgMaximize: ImageView
+    private lateinit var layoutMaximized: LinearLayout
+    private var screenSizeHelper = ScreenSizeHelper()
+    private val closingStartingYFromBottom = 100
+    //val width = windowManager.defaultDisplay.width
+
+    private fun setupLayout(){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            LAYOUT_FLAG = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
+        } else {
+            LAYOUT_FLAG = WindowManager.LayoutParams.TYPE_PHONE
+        }
+    }
+
+    private fun setupLayoutParams() : WindowManager.LayoutParams{
+        return WindowManager.LayoutParams(
+            WindowManager.LayoutParams.WRAP_CONTENT,
+            WindowManager.LayoutParams.WRAP_CONTENT,
+            LAYOUT_FLAG!!,
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+            PixelFormat.TRANSLUCENT
+        )
+    }
+
+    private fun setLayoutParamsPosition(layoutParams: WindowManager.LayoutParams, x: Int, y :Int){
+        layoutParams.gravity = Gravity.TOP or Gravity.RIGHT
+        layoutParams.x = x
+        layoutParams.y = y
+    }
+
+    private fun createDraggableClose() : ImageView{
+        imageClose = ImageView(context)
+        imageClose.setImageResource(R.drawable.baseline_close_24)
+        imageClose.visibility = View.INVISIBLE
+
+        return imageClose
+    }
+
+    private fun getCloseParams() : WindowManager.LayoutParams{
+        val imageParams = WindowManager.LayoutParams(
+            140,
+            140,
+            LAYOUT_FLAG!!,
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+            PixelFormat.TRANSLUCENT
+        )
+        imageParams.gravity = Gravity.BOTTOM or Gravity.CENTER
+        imageParams.y = closingStartingYFromBottom
+        return imageParams
+    }
+
+    private fun setupViewData(){
+        floatingViewLayout = mFloatingView.findViewById(R.id.floatingLayout)
+        layoutMaximized = mFloatingView.findViewById(R.id.layoutMaximized)
+        imgMaximize = mFloatingView.findViewById(R.id.imgMaximize)
+    }
+
+    private fun maximizeMinimizeHandler(){
+        if(isMaximized){
+            imgMaximize.visibility = View.VISIBLE
+            layoutMaximized.visibility = View.GONE
+            isMaximized = false
+        }else{
+            imgMaximize.visibility = View.GONE
+            layoutMaximized.visibility = View.VISIBLE
+            isMaximized = true
+        }
+    }
+
+    private fun exitPointHandler(elementLayoutParams: LayoutParams) : Boolean{
+        val exitPoint = screenSizeHelper.getMaxHeight(windowManager) - (closingStartingYFromBottom + (imageClose.height/2))
+        val elementTookUpHeight = elementLayoutParams.y + floatingViewLayout.height
+        return elementTookUpHeight > exitPoint
+    }
+
+    @SuppressLint("ClickableViewAccessibility")
+    private fun setupDraggableFunction(floatingViewLayout: RelativeLayout ,floatingLayoutParams: WindowManager.LayoutParams, floatView: View){
+
+        floatingViewLayout.setOnTouchListener(object : View.OnTouchListener {
+            var initialX = 0
+            var initialY = 0
+            var initialTouchX: Float = 0.0f
+            var initialTouchY: Float = 0.0f
+            override fun onTouch(v: View, event: MotionEvent): Boolean {
+                when (event.action) {
+                    MotionEvent.ACTION_DOWN -> {
+                        imageClose.visibility = View.VISIBLE
+                        initialX = floatingLayoutParams.x
+                        initialY = floatingLayoutParams.y
+
+                        // touch position
+                        initialTouchX = event.rawX
+                        initialTouchY = event.rawY
+
+                        return true
+                    }
+
+                    MotionEvent.ACTION_UP -> {
+                        imageClose.visibility = View.GONE
+                        floatingLayoutParams.x = initialX + (initialTouchX - event.rawX).toInt()
+                        floatingLayoutParams.y = initialY + (event.rawY - initialTouchY).toInt()
+
+                        if (exitPointHandler(floatingLayoutParams)) {
+                            (context as Service).stopSelf()
+                        }
+
+                        if(!isMoved){
+                            maximizeMinimizeHandler()
+                        }
+                        isMoved = false
+
+                        return true
+                    }
+
+                    MotionEvent.ACTION_MOVE -> {
+                        // calculate x and y coordinates
+                        val deltaX = (initialTouchX-event.getRawX()).toInt()
+                        val deltaY = (event.getRawY()-initialTouchY).toInt()
+                        floatingLayoutParams.x = initialX + deltaX
+                        floatingLayoutParams.y = initialY + deltaY
+
+                        // update layout with view coordinates
+                        windowManager.updateViewLayout(floatView, floatingLayoutParams)
+                        if (exitPointHandler(floatingLayoutParams)) {
+                            imageClose.setImageResource(R.drawable.baseline_close_red_24)
+                        } else {
+                            imageClose.setImageResource(R.drawable.baseline_close_24)
+                        }
+
+                        if(Math.abs(deltaX) > movementThreshold || Math.abs(deltaY) > movementThreshold) isMoved = true
+                        return true
+                    }
+                }
+                return false
+            }
+        })
+    }
+
+    fun startFloatingWindow() {
+
+        setupLayout()
+
+        // Inflate the floating layout
+        mFloatingView = LayoutInflater.from(context).inflate(R.layout.floating_control, null)
+        val floatingLayoutParams = setupLayoutParams()
+        setLayoutParamsPosition(floatingLayoutParams, 0, 0)
+
+        imageClose = createDraggableClose()
+        windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+        windowManager.addView(imageClose, getCloseParams())
+        windowManager.addView(mFloatingView, floatingLayoutParams)
+
+        setupViewData()
+        setupDraggableFunction(floatingViewLayout, floatingLayoutParams, mFloatingView)
+    }
+
+    fun removeFloatingWindow(){
+        if(mFloatingView!=null){
+            windowManager.removeView(mFloatingView)
+        }
+        if(imageClose!=null){
+            windowManager.removeView(imageClose)
+        }
+    }
+}
+
+//ScreenSizeHelper
+import android.util.DisplayMetrics
+import android.util.Log
+import android.view.WindowManager
+
+class ScreenSizeHelper {
+    fun getMaxHeight(windowManager: WindowManager) : Int{
+        val displayMetrics = DisplayMetrics()
+        windowManager.defaultDisplay.getMetrics(displayMetrics)
+        val screenHeight = displayMetrics.heightPixels
+        return screenHeight
+    }
+}
+
 //Activity
 	import android.annotation.SuppressLint
 	import android.os.Build

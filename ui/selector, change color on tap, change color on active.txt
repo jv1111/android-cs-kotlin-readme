@@ -16,3 +16,19 @@
     <!-- Add your views and content here -->
 
 </RelativeLayout>
+
+
+//USING SHAPE
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_pressed="true" android:drawable="@drawable/shape_custom_button_pressed"/>
+    <item android:drawable="@drawable/shape_custom_button"/>
+</selector>
+
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="@color/panel"/>
+    <corners android:radius="10dp"/>
+    <stroke android:color="@color/blue" android:width="5dp"/>
+</shape>
