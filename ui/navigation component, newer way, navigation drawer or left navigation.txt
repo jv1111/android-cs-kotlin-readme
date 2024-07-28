@@ -62,9 +62,11 @@ class FirstFragment : Fragment() {
     ): View? {
         binding = FragmentFirstBinding.inflate(inflater, container, false)
         binding.tv1.setOnClickListener{
+			//navigate
             //go to the second activity(this action is auto generated when you connect the fragment in the nav.xml)
             it.findNavController().navigate(R.id.action_firstFragment_to_secondFragment)//R.id.action_firstFragment_to_secondFragment is the id of the action in nav.xml
-        }
+			//or findNavController().navigate(R.id.action_firstFragment_to_secondFragment)
+		}
         return binding.root
     }
 }

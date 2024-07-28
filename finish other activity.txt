@@ -1,0 +1,32 @@
+//ACTIVITY 1
+    private lateinit var activityResultLauncher: ActivityResultLauncher<Intent>
+	 override fun onCreate(savedInstanceState: Bundle?) {
+       ...
+        activityResultLauncher = registerForActivityResult(
+            ActivityResultContracts.StartActivityForResult()
+        ){ result: ActivityResult ->
+            if (result.resultCode == RESULT_OK) {
+                finish() // Finish Activity1 if needed
+            }
+		}
+		...
+        setContentView(binding.root)
+    }
+	
+	 private fun startActivityRegister(){
+        Intent(this@LoginActivity, RegisterActivity::class.java).also {
+            activityResultLauncher.launch(it)
+        }
+    }
+	
+//ACTIVITY2
+...
+btnRegister.setOnTouchListener { v, event ->
+                if(event.action == MotionEvent.ACTION_UP){
+                    setResult(RESULT_OK)
+                    finish()
+                }else if(event.action == MotionEvent.ACTION_DOWN){
+
+                }
+                true
+            }

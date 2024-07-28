@@ -8,12 +8,23 @@ dependency
         android:layout_width="match_parent"
         android:layout_height="0dp"/>
 		
-//scrollable
+//scrollable --> vertical
 	 <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvTodos"
         android:layout_width="match_parent"
 		android:scrollbars="vertical"
         android:layout_height="0dp"/>
+		
+//Add ScrollListener
+ rvTodos.addOnScrollListener(object : RecyclerView.OnScrollListener(){
+                override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                    super.onScrolled(recyclerView, dx, dy)
+                    Log.i("myTag: ", "scrolling")
+                    if(!recyclerView.canScrollVertically(1)){
+                        Log.i("myTag", "scroll ended")
+                    }
+                }
+            })
 		
 2. create a new layout file for the item e.g item_todo.xml (this will what the item will look like)
 //sample
@@ -108,7 +119,13 @@ class TodoAdapter(
         val adapter = TodoAdapter(todoList)
         val rvTodo = findViewById<RecyclerView>(R.id.rvTodos)
         rvTodo.adapter = adapter
-        rvTodo.layoutManager = LinearLayoutManager(this)//select layout manager
+        //rvTodo.layoutManager = LinearLayoutManager(this)//select layout manager
+		//setup with orientation
+		layoutManager.orientation = LinearLayoutManager.HORIZONTAL
+        binding.apply {
+            rvFModes.adapter = adapter
+            rvFModes.layoutManager = layoutManager
+        }
 
         //add todo
         val btnAddTodo = findViewById<Button>(R.id.btnAddTodo)

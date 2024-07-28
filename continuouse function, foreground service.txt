@@ -1,156 +1,4 @@
-//README FILE
-1. Create a service class, code..
-2. Create a running app class, code..
-3. Add it to the manifest
-4. add the request to the MainActivity.kt
-5. add controls at .xml file
-6. add a continuous function using handler
-
-//SERVICE CLASS
-package com.example.kotlinviewmodelwithdependencyinjection.ForegroundService
-
-import android.app.Service
-import android.content.Intent
-import android.os.IBinder
-import android.util.Log
-import androidx.core.app.NotificationCompat
-import com.example.kotlinviewmodelwithdependencyinjection.R
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.isActive
-import kotlinx.coroutines.launch
-
-class RunningService: Service() {
-
-    companion object{
-        var isServiceRunning = false
-    }
-
-    override fun onBind(intent: Intent?): IBinder? {
-        return null
-    }
-
-    enum class Actions{
-        START, STOP
-    }
-
-    private val serviceScope = CoroutineScope(Dispatchers.Default)
-
-    private fun start(){
-        //create a foreground for notification
-        val notification = NotificationCompat.Builder(this, "running_channel")
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
-            .setContentTitle("Run is active")
-            .setContentText("i am running")
-            .build()
-        startForeground(1, notification)
-        //Start logging or the loop
-        serviceScope.launch {
-            while (isActive){
-                Log.i("myTag", "I am running bud")
-                delay(1000L)
-            }
-        }
-
-        isServiceRunning = true;
-    }
-
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        when(intent?.action){
-            Actions.START.toString() -> start()
-            Actions.STOP.toString() -> stopSelf()
-        }
-        return super.onStartCommand(intent, flags, startId)
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        Log.i("myTag", "service destroyed")
-        serviceScope.cancel()
-        isServiceRunning = false;
-    }
-
-}
-
-//RunningApp class
-package com.example.notificationserviceforegroundservice
-
-import android.app.Application
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.content.Context
-import android.os.Build
-
-class RunningApp: Application() {
-    override fun onCreate() {
-        super.onCreate()
-        //check if the android version of the device is oreo and newer
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
-            val channel = NotificationChannel(
-                "running_channel",//channel id of the service created
-            "Running Notifications",
-                NotificationManager.IMPORTANCE_HIGH
-            )
-            val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            notificationManager.createNotificationChannel(channel)
-        }
-    }
-}
-
-//MainActivity
-package com.example.notificationserviceforegroundservice
-
-import androidx.appcompat.app.AppCompatActivity
-import android.os.Bundle
-import androidx.core.app.ActivityCompat
-import android.Manifest
-import android.content.Intent
-import android.os.Build
-import android.util.Log
-import android.widget.Button
-
-class MainActivity : AppCompatActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU){
-            ActivityCompat.requestPermissions(
-                this,
-                arrayOf(Manifest.permission.POST_NOTIFICATIONS),
-                0
-            )
-        }
-
-        setContentView(R.layout.activity_main)
-
-        val btnStart = findViewById<Button>(R.id.btnStart)
-        val btnStop = findViewById<Button>(R.id.btnStop)
-
-        btnStart.setOnClickListener{
-            Log.i("myTag", "starting")
-            //create an intent, convert it to string because it is an enum
-            if(SmartKeySystem.isServiceRunning){
-            Intent(applicationContext,  RunningService::class.java).also {
-                it.action = RunningService.Actions.START.toString()
-                startService(it)
-            }
-			}
-        }
-
-        btnStop.setOnClickListener{
-            Log.i("myTag", "stopping")
-            Intent(applicationContext, RunningService::class.java).also {
-                it.action = RunningService.Actions.STOP.toString()
-                startService(it)//this is just to keep the service running and the Action.STOPS above is the method that will stop the service itself
-            }
-        }
-
-    }
-}
-
-//Manifest 
+//MANIFEST 
   <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
   <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
   
@@ -188,3 +36,145 @@ class MainActivity : AppCompatActivity() {
     </application>
 
 </manifest>
+
+
+//############################### SERVICE #################################
+package com.example.revbotonlinepro2.service.floatingService
+
+import android.app.Service
+import android.content.Intent
+import android.os.IBinder
+import android.util.Log
+import com.example.revbotonlinepro2.utils.NotificationHelper
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+
+class ServiceFloatingWindow : Service() {
+    companion object {
+        var isServiceRunning = false
+    }
+
+    enum class Actions{
+        START, STOP
+    }
+
+    private val serviceScope = CoroutineScope(Dispatchers.Default)
+    private fun runningService(){
+        serviceScope.launch {
+            while (isActive){
+                Log.i("myTag", "I am running bud")
+                delay(1000L)
+            }
+        }
+    }
+
+    override fun onBind(intent: Intent?): IBinder? {
+        return null
+    }
+
+   private fun start(){
+       Log.i("myTag, ","startFunction")
+       NotificationHelper(this).startNotification()
+       runningService()
+       isServiceRunning = true;
+    }
+
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        Log.i("myTag", "onstartcommand")
+        Log.i("myTag", intent?.action.toString())
+        when(intent?.action){
+            Actions.START.toString() -> start()
+            Actions.STOP.toString() -> stopSelf()
+        }
+        return super.onStartCommand(intent, flags, startId)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        serviceScope.cancel()
+        isServiceRunning = false
+    }
+}
+
+//###################################### NotificationHelper #########################
+package com.example.revbotonlinepro2.utils
+
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
+import android.app.Service
+import android.content.Context
+import android.content.Intent
+import android.os.Build
+import androidx.core.app.NotificationCompat
+import com.example.revbotonlinepro2.R
+import com.example.revbotonlinepro2.config.Config
+import com.example.revbotonlinepro2.view.activities.MainActivity
+
+class NotificationHelper(private val context: Context) {
+    fun createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channelId = "running_channel_id"
+            val channelName = "Foreground Service Channel"
+            val channelDescription = "Channel for Foreground Service"
+            val importance = NotificationManager.IMPORTANCE_DEFAULT
+            val channel = NotificationChannel(channelId, channelName, importance).apply {
+                description = channelDescription
+            }
+            val notificationManager: NotificationManager =
+                context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            notificationManager.createNotificationChannel(channel)
+        }
+    }
+
+    fun startNotification() {
+        createNotificationChannel()
+
+        val notificationIntent = Intent(context, MainActivity::class.java)
+        val pendingIntent = PendingIntent.getActivity(
+            context, 0, notificationIntent, PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val notification = NotificationCompat.Builder(context, "running_channel_id")
+            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setContentTitle("Title")
+            .setContentText("text")
+            .setContentIntent(pendingIntent)
+            .build()
+
+        (context as Service).startForeground(Config.FOREGROUND_MESSENGER_ID, notification)
+    }
+}
+
+
+//############################# ACTIVITY ########################
+    private fun checkPermission(){
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU){
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+                0
+            )
+        }
+    }
+	
+	
+    private fun startFloatingMessenger(){
+        if(!ServiceFloatingWindow.isServiceRunning){
+            Log.i("myTag", "starting the service")
+            Intent(applicationContext, ServiceFloatingWindow::class.java).also {
+                it.action = ServiceFloatingWindow.Actions.START.toString()
+                startService(it)
+            }
+        }
+    }
+    private fun stopFloatingMessenger(){
+        Intent(this@MainActivity, ServiceFloatingWindow::class.java).also {
+            it.action = ServiceFloatingWindow.Actions.STOP.toString()
+            startService(it)
+        }
+    }

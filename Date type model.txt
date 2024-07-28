@@ -1,0 +1,6 @@
+data class ApiModelSubject (
+    val id: Int,
+    val userId: Int,
+    val subjectName: String,
+    val createdDate: Instant//accepts a string type date
+)

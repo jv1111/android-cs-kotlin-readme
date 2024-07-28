@@ -14,34 +14,34 @@
     <uses-permission android:name="android.permission.INTERNET"/>
 
 //Retrofit INSTANCE
-import com.example.cwsmartdevicev3.global.Globals
+import com.example.revbotonlinepro2.config.Config
 import com.google.gson.GsonBuilder
 import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 
-class RetrofitInstance {
-    companion object{
-        val baseUrl = "http://192.168.4.1/"
-        fun getRetrofitInstance(): Retrofit{
-
-            val httpClient = OkHttpClient.Builder()
-                .connectTimeout(Globals.maxTimeout, TimeUnit.SECONDS)
-                .readTimeout(Globals.maxTimeout, TimeUnit.SECONDS)
-                .writeTimeout(Globals.maxTimeout, TimeUnit.SECONDS)
-                .build()
-
-            return Retrofit.Builder()
-                .baseUrl(baseUrl)
-                .addConverterFactory(GsonConverterFactory.create(GsonBuilder().create()))
-                .client(httpClient)
-                .build()
+object RetrofitInstance {
+    private val httpClient: OkHttpClient by lazy {
+        val loggingInterceptor = HttpLoggingInterceptor().apply {
+            this.level = HttpLoggingInterceptor.Level.BODY
         }
+        OkHttpClient.Builder()
+            .addInterceptor(loggingInterceptor)
+            .connectTimeout(Config.MAX_TIMEOUT, TimeUnit.SECONDS)
+            .readTimeout(Config.MAX_TIMEOUT, TimeUnit.SECONDS)
+            .writeTimeout(Config.MAX_TIMEOUT, TimeUnit.SECONDS)
+            .build()
+    }
+    val retrofit: Retrofit by lazy {
+        Retrofit.Builder()
+            .baseUrl(Config.BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create(GsonBuilder().create()))
+            .client(httpClient)
+            .build()
     }
 }
-
-//Retrofit with http logging
 
 
 //MODEL
@@ -121,3 +121,69 @@ class MyViewModel(application: Application) : AndroidViewModel(application) {
 		})
 	}
 }
+
+//------------------------- OPTIONAL ---------------------------
+
+//Add logging interceptor
+import okhttp3.OkHttpClient
+            val loggingInterceptor = HttpLoggingInterceptor().apply {
+                this.level = HttpLoggingInterceptor.Level.BODY//<NONE,BODY,HEADER>
+            }
+            val httpClient = OkHttpClient.Builder()
+                .addInterceptor(AuthInterceptor)
+                .addInterceptor(loggingInterceptor)
+                .connectTimeout(30, TimeUnit.SECONDS)
+                .readTimeout(30, TimeUnit.SECONDS)
+                .writeTimeout(30, TimeUnit.SECONDS)
+                .build()
+				
+				
+//USING COROUTINES
+
+//Exception
+class UnauthorizedException (message: String) : Exception(message)
+
+//SERVICE
+    @Headers("Content-Type: application/json")
+    @POST("user/login")
+    suspend fun login(@Body credential: ModelReqLogin) : Response<ModelDbUser>
+
+//REPOSITORY
+	suspend fun login(username: String, password: String) : Result<ModelDbUser>{
+        val credential = ModelReqLogin(username, password)
+        return withContext(Dispatchers.IO){
+            try {
+                responseHandler.responseHandler(apiService.login(credential))
+            }catch (e: Exception){
+                Result.failure(e)
+            }
+        }
+    }
+	
+	fun <T> responseHandler(response: Response<T>): Result<T>{
+        return if (response.isSuccessful) {
+            Result.success(response.body()!!)
+        } else {
+            when(response.code()){
+                401 -> throw UnauthorizedException(response.message())
+                else -> Result.failure(Exception("error: ${response.code()} - ${response.message()}"))
+            }
+        }
+    }
+
+//ViewModel
+	fun login(username: String, password: String){
+        viewModelScope.launch {
+            val result = repository.login(username, password)
+            if (result.isSuccess){
+                Log.i("myTag: ", "success")
+            }else{
+                val exception = result.exceptionOrNull()
+                if(exception is UnauthorizedException){
+                    Log.i("myTag", exception.message.toString())
+                }else{
+                    Log.i("myTag: ", "internal server error")
+                }
+            }
+        }
+    }

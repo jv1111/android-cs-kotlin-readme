@@ -41,12 +41,28 @@ class MainActivity : AppCompatActivity() {
 
         button.setOnTouchListener { view, motionEvent ->
             if (motionEvent.action == MotionEvent.ACTION_UP){
-                button.startAnimation(scaleDown)
-            }else if(motionEvent.action == MotionEvent.ACTION_DOWN){
                 button.startAnimation(scaleUp)
+            }else if(motionEvent.action == MotionEvent.ACTION_DOWN){
+                button.startAnimation(scaleDown)
             }
             true
         }
     }
 }
+
+//CLEAN CODE
+    private val scaleUp = AnimationUtils.loadAnimation(context, R.anim.scale_up)
+    private val scaleDown = AnimationUtils.loadAnimation(context, R.anim.scale_down)
+
+    @SuppressLint("ClickableViewAccessibility")
+    fun scaleDownOnTouch(relativeLayout: RelativeLayout){
+        relativeLayout.setOnTouchListener { view, motionEvent ->
+            if (motionEvent.action == MotionEvent.ACTION_UP){
+                relativeLayout.startAnimation(scaleUp)
+            }else if(motionEvent.action == MotionEvent.ACTION_DOWN){
+                relativeLayout.startAnimation(scaleDown)
+            }
+            true
+        }
+    }
 

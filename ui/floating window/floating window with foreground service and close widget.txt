@@ -1,39 +1,193 @@
 //SEPERATE CLASS APPROACH IS WRITTEN BELOW
+//Manifest
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
+	
+	<service android:name=".service.floatingService.ServiceFloatingWindow" android:foregroundServiceType="connectedDevice"/>
+//Manifest full code
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
+
+    <application
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.RevbotOnlinePro2"
+        android:usesCleartextTraffic="true"
+        tools:targetApi="31">
+        <activity
+            android:name=".view.activities.RegisterActivity"
+            android:exported="false" />
+        <activity
+            android:name=".view.activities.LoginActivity"
+            android:exported="false" />
+        <activity
+            android:name=".view.activities.SplashActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".view.activities.MainActivity"
+            android:exported="false" />
+        <service android:name=".service.floatingService.ServiceFloatingWindow" android:foregroundServiceType="connectedDevice"/>
+
+        <meta-data
+            android:name="preloaded_fonts"
+            android:resource="@array/preloaded_fonts" />
+    </application>
+
+</manifest>
 
 first create a foreground service, check in on foreground service tutorial and modify the code
 
-//RunningService.kt
-class RunningService : Service() {
+//FLOATING_LAYOUT.xml
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/floatingLayout"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_centerHorizontal="true"
+    android:layout_margin="30dp">
 
+    <TextView
+        android:id="@+id/tvWidget"
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        android:textSize="22dp"
+        android:text="10"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:textColor="@color/text_color"
+        android:background="@color/background_color"/>
+
+</RelativeLayout>
+
+//SERVICE.KT
+import android.app.Service
+import android.content.Intent
+import android.os.IBinder
+import android.util.Log
+import com.example.revbotonlinepro2.utils.FloatingWindowHelper
+
+class ServiceFloatingWindow : Service() {
+
+    private lateinit var floatingWindowHelper: FloatingWindowHelper
+
+    companion object {
+        var isServiceRunning = false
+    }
+
+    enum class Actions{
+        START, STOP
+    }
+
+    override fun onBind(intent: Intent?): IBinder? {
+        return null
+    }
+
+   private fun start(){
+       Log.i("myTag, ","startFunction")
+       floatingWindowHelper = FloatingWindowHelper(this)
+       floatingWindowHelper.startFloatingWindow()
+       isServiceRunning = true;
+    }
+
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        Log.i("myTag", "onstartcommand")
+        Log.i("myTag", intent?.action.toString())
+        when(intent?.action){
+            Actions.START.toString() -> start()
+            Actions.STOP.toString() -> stopSelf()
+        }
+        return super.onStartCommand(intent, flags, startId)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        isServiceRunning = false
+        floatingWindowHelper.removeFloatingWindow()
+    }
+}
+
+//FloatingWindowHelper
+import android.annotation.SuppressLint
+import android.app.Service
+import android.content.Context
+import android.graphics.PixelFormat
+import android.os.Build
+import android.util.Log
+import android.view.Gravity
+import android.view.LayoutInflater
+import android.view.MotionEvent
+import android.view.View
+import android.view.WindowManager
+import android.widget.ImageView
+import android.widget.RelativeLayout
+import android.widget.TextView
+import com.example.revbotonlinepro2.R
+import org.w3c.dom.Text
+
+class FloatingWindowHelper(private val context: Context) {
+    //---------
     private var LAYOUT_FLAG: Int? = null
     private lateinit var mFloatingView: View
     private lateinit var windowManager: WindowManager
     private lateinit var imageClose: ImageView
-	...
-	private fun startFloatingWindow() {
-        //setup proper flag for different android versions
+    private lateinit var floatingViewLayout: RelativeLayout
+    private var isMoved = false
+    private val movementThreshold  = 10
+    //-------
+    private lateinit var tvWidget: TextView
+
+    private fun setupLayout(){
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             LAYOUT_FLAG = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
         } else {
             LAYOUT_FLAG = WindowManager.LayoutParams.TYPE_PHONE
         }
+    }
 
-        //inflate
-        mFloatingView = LayoutInflater.from(this).inflate(R.layout.floating_layout, null)
-        val layoutParams = WindowManager.LayoutParams(
+    private fun setupLayoutParams() : WindowManager.LayoutParams{
+        return WindowManager.LayoutParams(
             WindowManager.LayoutParams.WRAP_CONTENT,
             WindowManager.LayoutParams.WRAP_CONTENT,
             LAYOUT_FLAG!!,
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
             PixelFormat.TRANSLUCENT
         )
+    }
 
-        //initial position
+    private fun setLayoutParamsPosition(layoutParams: WindowManager.LayoutParams, x: Int, y :Int){
         layoutParams.gravity = Gravity.TOP or Gravity.RIGHT
-        layoutParams.x = 0
-        layoutParams.y = 100
+        layoutParams.x = x
+        layoutParams.y = y
+    }
 
-        //create a close component
+    private fun createDraggableClose() : ImageView{
+        imageClose = ImageView(context)
+        imageClose.setImageResource(R.drawable.baseline_close_24)
+        imageClose.visibility = View.INVISIBLE
+
+        return imageClose
+    }
+
+    private fun getCloseParams() : WindowManager.LayoutParams{
         val imageParams = WindowManager.LayoutParams(
             140,
             140,
@@ -43,151 +197,149 @@ class RunningService : Service() {
         )
         imageParams.gravity = Gravity.BOTTOM or Gravity.CENTER
         imageParams.y = 100
+        return imageParams
+    }
 
-        windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
-        imageClose = ImageView(this)
-        imageClose.setImageResource(R.drawable.ic_launcher_foreground)
-        imageClose.visibility = View.INVISIBLE
-        windowManager.addView(imageClose, imageParams)
-        windowManager.addView(mFloatingView, layoutParams)
-        mFloatingView.visibility = View.VISIBLE
-
-        val height = windowManager.defaultDisplay.height
-        val width = windowManager.defaultDisplay.width
-
-        val tvWidget = mFloatingView.findViewById<TextView>(R.id.tvWidget)
+    private fun setupViewData(){
+        floatingViewLayout = mFloatingView.findViewById(R.id.floatingLayout)
+        tvWidget = mFloatingView.findViewById(R.id.tvWidget)
 
         tvWidget.text = "running"
+    }
 
-        tvWidget.setOnTouchListener(
-            object : View.OnTouchListener {
-                var initialX = 0
-                var initialY = 0
-                var initialTouchX:Float = 0.0f
-                var initialTouchY:Float = 0.0f
-                override fun onTouch(v: View, event: MotionEvent): Boolean {
-                    when (event.action) {
-                        MotionEvent.ACTION_DOWN -> {
-                            imageClose.visibility = View.VISIBLE
-                            initialX = layoutParams.x
-                            initialY = layoutParams.y
+    @SuppressLint("ClickableViewAccessibility")
+    private fun setupDraggableFunction(floatingViewLayout: TextView ,floatingLayoutParams: WindowManager.LayoutParams){
 
-                            //touch position
-                            initialTouchX = event.getRawX()
-                            initialTouchY = event.getRawY()
+        val height = windowManager.defaultDisplay.height
+        //val width = windowManager.defaultDisplay.width
 
-                            return true
-                        }
+        floatingViewLayout.setOnTouchListener(object : View.OnTouchListener {
+            var initialX = 0
+            var initialY = 0
+            var initialTouchX: Float = 0.0f
+            var initialTouchY: Float = 0.0f
+            override fun onTouch(v: View, event: MotionEvent): Boolean {
+                when (event.action) {
+                    MotionEvent.ACTION_DOWN -> {
+                        imageClose.visibility = View.VISIBLE
+                        initialX = floatingLayoutParams.x
+                        initialY = floatingLayoutParams.y
 
-                        MotionEvent.ACTION_UP -> {
-                            imageClose.visibility = View.GONE
-                            layoutParams.x = initialX+(initialTouchX-event.getRawX()).toInt()
-                            layoutParams.y = initialY+(event.getRawY() - initialTouchY).toInt()
-                            //remove widget
-                            if(layoutParams.y>(height*0.6)){
-                                stopSelf()
-                            }
-                            return true
-                        }
+                        // touch position
+                        initialTouchX = event.rawX
+                        initialTouchY = event.rawY
 
-                        MotionEvent.ACTION_MOVE -> {
-                            //calculate x and y coordinates
-                            layoutParams.x = initialX+(initialTouchX-event.getRawX()).toInt()
-                            layoutParams.y = initialY+(event.getRawY()-initialTouchY).toInt()
-
-                            //update layout with view coordinates
-                            windowManager.updateViewLayout(mFloatingView, layoutParams)
-                            if(layoutParams.y>(height*0.6)){
-                                imageClose.setImageResource(R.drawable.ic_launcher_background)
-                            }else{
-                                imageClose.setImageResource(R.drawable.ic_launcher_foreground)
-                            }
-                            return true
-                        }
+                        return true
                     }
-                    return false
+
+                    MotionEvent.ACTION_UP -> {
+                        imageClose.visibility = View.GONE
+                        floatingLayoutParams.x = initialX + (initialTouchX - event.rawX).toInt()
+                        floatingLayoutParams.y = initialY + (event.rawY - initialTouchY).toInt()
+
+                        // remove widget
+                        if (floatingLayoutParams.y > (height * 0.6)) {
+                            (context as Service).stopSelf()
+                        }
+                        //touch event
+                        if(!isMoved){
+                            Log.i("myTag", "tapped")
+                        }
+                        isMoved = false
+
+                        return true
+                    }
+
+                    MotionEvent.ACTION_MOVE -> {
+                        // calculate x and y coordinates
+                        val deltaX = (initialTouchX-event.getRawX()).toInt()
+                        val deltaY = (event.getRawY()-initialTouchY).toInt()
+                        floatingLayoutParams.x = initialX + deltaX
+                        floatingLayoutParams.y = initialY + deltaY
+
+                        //TODO SAVE TO TXT (DONT CHANGE ALL TXT, JUST UP TO THE TOUCH FUNCTION)
+
+                        // update layout with view coordinates
+                        windowManager.updateViewLayout(mFloatingView, floatingLayoutParams)
+                        if (floatingLayoutParams.y > (height * 0.6)) {
+                            imageClose.setImageResource(R.drawable.baseline_close_red_24)
+                        } else {
+                            imageClose.setImageResource(R.drawable.baseline_close_24)
+                        }
+
+                        if(Math.abs(deltaX) > movementThreshold || Math.abs(deltaY) > movementThreshold) isMoved = true
+                        //TODO TEST
+                        return true
+                    }
                 }
-            })
+                return false
+            }
+        })
     }
-	...
-	private fun start() {
-		...
-        startForeground(1, notification)
-        startFloatingWindow()
-        isServiceRunning = true;
+
+    fun startFloatingWindow() {
+
+        setupLayout()
+
+        // Inflate the floating layout
+        mFloatingView = LayoutInflater.from(context).inflate(R.layout.floating_layout, null)
+        val floatingLayoutParams = setupLayoutParams()
+        setLayoutParamsPosition(floatingLayoutParams, 0, 100)
+
+        imageClose = createDraggableClose()
+        windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+        windowManager.addView(imageClose, getCloseParams())
+        windowManager.addView(mFloatingView, floatingLayoutParams)
+        mFloatingView.visibility = View.VISIBLE
+
+        setupViewData()
+        setupDraggableFunction(tvWidget, floatingLayoutParams)
     }
-	
-	override fun onDestroy() {
-        super.onDestroy()
+
+    //TODO ADD A TAP FUNCTION
+
+    fun removeFloatingWindow(){
         if(mFloatingView!=null){
             windowManager.removeView(mFloatingView)
         }
         if(imageClose!=null){
             windowManager.removeView(imageClose)
         }
-        ...
     }
-	
-//floating_layout.xml
-<?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
+}
 
-    <RelativeLayout
-        android:id="@+id/layout_widget"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:layout_margin="30dp"
-        >
-        <TextView
-            android:id="@+id/tvWidget"
-            android:layout_width="120dp"
-            android:layout_height="120dp"
-            android:textSize="22dp"
-            android:text="10"
-            android:textStyle="bold"
-            android:gravity="center"
-            android:textColor="@color/white"
-            android:background="@color/black"/>
-    </RelativeLayout>
+//Activity
+	import android.annotation.SuppressLint
+	import android.os.Build
+	import androidx.appcompat.app.AppCompatActivity
+	import android.os.Bundle
+	import android.view.MotionEvent
+	import androidx.core.app.ActivityCompat
+	import android.Manifest
+	import android.content.Intent
+	import android.net.Uri
+	import android.provider.Settings
+	import android.util.Log
+	import android.widget.Toast
+	import com.example.revbotonlinepro2.databinding.ActivityMainBinding
+	import com.example.revbotonlinepro2.service.floatingService.ServiceFloatingWindow
+	import com.example.revbotonlinepro2.utils.AnimationHelper
+	...
+	private fun startFloatingMessenger(){
+			if(!Settings.canDrawOverlays(this@MainActivity)){
+				getFloatingWindowPermission()
+			}else{
+				if(!ServiceFloatingWindow.isServiceRunning){
+					Log.i("myTag", "starting the service")
+					Intent(applicationContext, ServiceFloatingWindow::class.java).also {
+						it.action = ServiceFloatingWindow.Actions.START.toString()
+						startService(it)
+					}
+				}
+			}
+		}
 
-</RelativeLayout>
-
-//MainActivity.kt
-class MainActivity : AppCompatActivity() {
-	...
-    override fun onCreate(savedInstanceState: Bundle?) {
-		...
-        binding.openFloatingButton.setOnClickListener{
-            startFloatingWindowService()
-        }
-    }
-	...
-	private fun startFloatingWindowService(){
-        if(!Settings.canDrawOverlays(this@MainActivity)){
-            getFloatingWindowPermission()
-        }else{
-            Log.i("myTag", "starting")
-            //create an intent, convert enum to string because it is an enum
-            Intent(applicationContext, RunningService::class.java).also{
-                it.action = RunningService.Actions.START.toString()//call the action inside the RunningService
-                startService(it)//start the service
-                finish()
-            }
-        }
-    }
-	...
-	private fun getFloatingWindowPermission(){
-        //for the floating window
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
-            val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:$packageName"))
-            startActivityForResult(intent, 1)
-        }
-    }
-	
-	override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if(requestCode==1)
         {
@@ -196,47 +348,22 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
+	
+	private fun getFloatingWindowPermission(){
+			//for the floating window
+			if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+				val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:$packageName"))
+				startActivityForResult(intent, 1)
+			}
+		}
+	
+	    private fun stopFloatingMessenger(){
+        Intent(this@MainActivity, ServiceFloatingWindow::class.java).also {
+            it.action = ServiceFloatingWindow.Actions.STOP.toString()
+            startService(it)
+        }
+    }
 	...
-}
-
-//AndroidManifest.xml
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-	...
-    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
-	...
-	</activity>
-        <service
-            android:name=".background_service.RunningService"
-            android:foregroundServiceType="connectedDevice"
-            android:enabled="true"
-            />
-    </application>
-</manifest>
-
-//To create a tap function just add isMoved variable
-tvWidget.setOnTouchListener(
-            object : View.OnTouchListener {
-                ...
-                var isMoved = false 
-				...
-				MotionEvent.ACTION_UP -> {
-                            imageClose.visibility = View.GONE
-                            layoutParams.x = initialX+(initialTouchX-event.getRawX()).toInt()
-                            layoutParams.y = initialY+(event.getRawY() - initialTouchY).toInt()
-
-                            //touch event
-                            if(!isMoved){
-                                Log.i("myTag", "tapped")
-								...
-							}
-							isMoved = false							
-				}
-				
-				MotionEvent.ACTION_MOVE -> {
-							...
-                            isMoved = true
-                            return true
-                        }
 				
 				
 //enable permission using switch

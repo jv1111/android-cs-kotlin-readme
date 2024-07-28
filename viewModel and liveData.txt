@@ -19,7 +19,6 @@ class TestViewModel:ViewModel(){
         Log.i(tag, user.toString())
         //DO API CALL HERE
     }
-	
 }
 
 //MainActivity
@@ -27,6 +26,17 @@ lateinit var viewmodel: TestViewModel
 
 //MainActivity -> onCreate
 viewModel = ViewModelProvider(this).get(TestViewModel::class.java)
+
+//USING BY viewModels SETUP
+//MainActivity
+//dependency
+implementation("androidx.activity:activity-ktx:1.3.0")
+implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.4.0")
+	
+import androidx.activity.viewModels
+class LoginActivity : AppCompatActivity() {
+    private val viewModel : ViewModelLogin by viewModels()
+
 
 //MainActivity
 private fun incrementText(){

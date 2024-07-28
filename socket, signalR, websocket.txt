@@ -1,0 +1,63 @@
+//dependency
+    implementation("com.microsoft.signalr:signalr:1.0.0")
+
+//SignalRListener.java
+package com.example.signalrwebsocket;
+
+import android.util.Log;
+import android.view.View;
+
+import com.microsoft.signalr.HubConnection;
+import com.microsoft.signalr.HubConnectionBuilder;
+import com.microsoft.signalr.HubConnectionState;
+
+public class SignalRListener {
+    private static SignalRListener instance;
+    HubConnection hubConnection;
+
+    public SignalRListener(
+            //View view
+    ){
+        String url = "http://192.168.8.100/SampleSocket/chat";
+        hubConnection = HubConnectionBuilder.create(url).build();
+        hubConnection.on("ReceiveMessage", (data, data2) -> {
+            //set view here... (logic etc...)
+            Log.i("myTag message: ", data);
+        }, String.class, String.class);
+    }
+
+    public static SignalRListener getInstance(
+            //View view
+    ){
+        if(instance == null){
+            //instance = new SignalRListener(view);
+            instance = new SignalRListener();
+        }
+        return instance;
+    }
+
+    public void send(){
+        try {
+            hubConnection.send("JoinChat", "data");
+        }catch (Exception ex){
+            Log.i("myTag error:", ex.getMessage());
+        }
+    }
+
+    public boolean startConnection(){
+        //hubConnection.getConnectionState()
+        //HubConnectionState.DISCONNECTED
+        Log.i("myTag", "starting connection");
+        try {
+            hubConnection.start().blockingAwait(); // Ensure the connection is started before returning
+            return true;
+        } catch (Exception e) {
+            Log.e("myTag error:", "Connection start failed: " + e.getMessage());
+            return false;
+        }
+    }
+    public boolean stopConenction(){
+        hubConnection.stop();
+        return true;
+    }
+}
