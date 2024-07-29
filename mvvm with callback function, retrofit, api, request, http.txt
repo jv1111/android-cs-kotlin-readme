@@ -170,6 +170,28 @@ class UnauthorizedException (message: String) : Exception(message)
             }
         }
     }
+	
+	//if you wanna wrap try catch
+	suspend fun <T> handleApiResponse(
+        call: suspend () -> Response<T>
+    ): Result<T> {
+        return try {
+            withContext(Dispatchers.IO) {
+                val response = call()
+                if (response.isSuccessful) {
+                    Result.success(response.body()!!)
+                } else {
+                    when (response.code()) {
+                        401 -> throw UnauthorizedException(response.message())
+                        else -> Result.failure(Exception("error: ${response.code()} - ${response.message()}"))
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+        //TODO save to txt
+    }
 
 //ViewModel
 	fun login(username: String, password: String){

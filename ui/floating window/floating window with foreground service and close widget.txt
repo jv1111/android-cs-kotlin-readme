@@ -514,10 +514,20 @@ import android.view.WindowManager
 
 class ScreenSizeHelper {
     fun getMaxHeight(windowManager: WindowManager) : Int{
-        val displayMetrics = DisplayMetrics()
-        windowManager.defaultDisplay.getMetrics(displayMetrics)
-        val screenHeight = displayMetrics.heightPixels
-        return screenHeight
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            // Use WindowMetrics API for Android 11 and above
+            val windowMetrics = windowManager.currentWindowMetrics
+            val insets = windowMetrics.windowInsets
+            val insetsIgnoringVisibility = insets.getInsetsIgnoringVisibility(WindowInsets.Type.systemBars())
+            val bounds = windowMetrics.bounds
+            bounds.height() - insetsIgnoringVisibility.top - insetsIgnoringVisibility.bottom
+        } else {
+            // Use DisplayMetrics for older versions
+            val displayMetrics = DisplayMetrics()
+            @Suppress("DEPRECATION")
+            windowManager.defaultDisplay.getMetrics(displayMetrics)
+            displayMetrics.heightPixels
+        }
     }
 }
 

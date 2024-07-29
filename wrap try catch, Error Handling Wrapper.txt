@@ -1,0 +1,31 @@
+    private suspend fun <T> handleApiCall(apiCall: suspend () -> T): T? {
+        return try {
+            apiCall()
+        } catch (e: Exception) {
+            Log.i("myTag", "error: ${e.message}")
+            null
+        }
+    }
+	
+	
+	
+	suspend fun <T> handleApiResponse(
+		call: suspend () -> Response<T>
+    ): Result<T> {
+        return try {
+            withContext(Dispatchers.IO) {
+                val response = call()
+                if (response.isSuccessful) {
+                    Result.success(response.body()!!)
+                } else {
+                    when (response.code()) {
+                        401 -> throw UnauthorizedException(response.message())
+                        else -> Result.failure(Exception("error: ${response.code()} - ${response.message()}"))
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+        //TODO save to txt
+    }
